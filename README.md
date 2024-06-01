@@ -113,10 +113,7 @@ st.subheader("An advanced tool for technical analysis")
 
 For a detailed implementation, refer to the full script provided in the repository.
 
-## License
-
-This project is licensed under the MIT License. See the LICENSE file for details.
-
+##GME IS FOR THE CHILDREN##
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request with any enhancements, bug fixes, or new features.
