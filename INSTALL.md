@@ -1,6 +1,6 @@
 Let's take a step-by-step approach to help you set up the Stock Charting App using VS Code. We will ensure Python is installed correctly, clone the repository, and get the app running. We will also clean up any potential issues caused by previous steps.
 
-## Step 1: Verify and Clean Up Python Installation
+## Step 1: Verify and Clean Up Python Installation if necessary
 
 1. **Uninstall Python (if needed)**:
    - Open Control Panel and go to "Uninstall a program".
