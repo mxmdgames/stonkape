@@ -217,23 +217,44 @@ if not data.empty:
     if show_volume:
         fig.add_trace(go.Bar(x=data[datetime_col], y=data['Volume'], name='Volume', marker=dict(color='gray'), yaxis='y2'))
 
-    # Layout settings
-    fig.update_layout(
-        title=f"Stock Data and Technical Indicators for {ticker}",
-        yaxis_title='Stock Price',
-        xaxis_title='Date',
-        template='plotly_dark',
-        yaxis2=dict(
-            title='Volume',
-            overlaying='y',
-            side='right',
-            showgrid=False,
-        ),
-        xaxis_rangeslider_visible=False
-    )
+   # Layout settings
+fig.update_layout(
+    title=f"Stock Data and Technical Indicators for {ticker}",
+    yaxis_title='Stock Price',
+    xaxis_title='Date',
+    template='plotly_dark',
+    yaxis2=dict(
+        title='Volume',
+        overlaying='y',
+        side='right',
+        showgrid=False,
+    ),
+    xaxis_rangeslider_visible=False,
+    updatemenus=[
+        {
+            'buttons': [
+                {
+                    'args': [{'scrollZoom': False}],
+                    'label': 'Zoom Off',
+                    'method': 'relayout'
+                },
+                {
+                    'args': [{'scrollZoom': True}],
+                    'label': 'Zoom On',
+                    'method': 'relayout'
+                }
+            ],
+            'direction': 'down',
+            'showactive': True,
+            'x': 1.05,
+            'xanchor': 'right',
+            'y': 1.2,
+            'yanchor': 'top'
+        }
+    ]
+)
 
-    st.plotly_chart(fig, use_container_width=True)
-
+st.plotly_chart(fig, use_container_width=True)
     # Define a threshold for high volume
     VOLUME_THRESHOLD = 1000
 
