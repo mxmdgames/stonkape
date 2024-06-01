@@ -46,6 +46,7 @@ Let's take a step-by-step approach to help you set up the Stock Charting App usi
    ```sh
    git clone https://github.com/mxmdgames/stonkape.git .
    ```
+![image](https://github.com/mxmdgames/stonkape/assets/100034864/4f614417-546f-48cb-86e6-37bc2316ba20)
 
 ## Step 4: Open Project in VS Code
 
@@ -64,6 +65,7 @@ Let's take a step-by-step approach to help you set up the Stock Charting App usi
    ```sh
    pip install streamlit yfinance pandas plotly ta
    ```
+![image](https://github.com/mxmdgames/stonkape/assets/100034864/067a3471-88c4-4aff-84b4-1f5e83a8d700)
 
 ## Step 6: Run the Streamlit App
 
@@ -76,6 +78,7 @@ Let's take a step-by-step approach to help you set up the Stock Charting App usi
    ```sh
    streamlit run stock_charting_app2.py
    ```
+![image](https://github.com/mxmdgames/stonkape/assets/100034864/2a6e56ea-4669-4c5c-bd96-5afe04866584)
 
 ## Troubleshooting
 
