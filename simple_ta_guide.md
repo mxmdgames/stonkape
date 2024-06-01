@@ -1,4 +1,3 @@
-Sure, let's adjust the guide accordingly:
 
 ---
 
