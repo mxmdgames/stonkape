@@ -51,7 +51,6 @@ time_frame_mapping = {
     "1 Year": "1d",
     "YTD": "1d",
     "5Y": "1d",
-    
 }
 
 period_mapping = {
@@ -63,7 +62,6 @@ period_mapping = {
     "1 Year": "1y",
     "YTD": "ytd",
     "5Y": "5y",
-    
 }
 
 # Initialize period and interval
@@ -217,44 +215,45 @@ if not data.empty:
     if show_volume:
         fig.add_trace(go.Bar(x=data[datetime_col], y=data['Volume'], name='Volume', marker=dict(color='gray'), yaxis='y2'))
 
-   # Layout settings
-fig.update_layout(
-    title=f"Stock Data and Technical Indicators for {ticker}",
-    yaxis_title='Stock Price',
-    xaxis_title='Date',
-    template='plotly_dark',
-    yaxis2=dict(
-        title='Volume',
-        overlaying='y',
-        side='right',
-        showgrid=False,
-    ),
-    xaxis_rangeslider_visible=False,
-    updatemenus=[
-        {
-            'buttons': [
-                {
-                    'args': [{'scrollZoom': False}],
-                    'label': 'Zoom Off',
-                    'method': 'relayout'
-                },
-                {
-                    'args': [{'scrollZoom': True}],
-                    'label': 'Zoom On',
-                    'method': 'relayout'
-                }
-            ],
-            'direction': 'down',
-            'showactive': True,
-            'x': 1.05,
-            'xanchor': 'right',
-            'y': 1.2,
-            'yanchor': 'top'
-        }
-    ]
-)
+    # Layout settings
+    fig.update_layout(
+        title=f"Stock Data and Technical Indicators for {ticker}",
+        yaxis_title='Stock Price',
+        xaxis_title='Date',
+        template='plotly_dark',
+        yaxis2=dict(
+            title='Volume',
+            overlaying='y',
+            side='right',
+            showgrid=False,
+        ),
+        xaxis_rangeslider_visible=False,
+        updatemenus=[
+            {
+                'buttons': [
+                    {
+                        'args': [{'scrollZoom': False}],
+                        'label': 'Zoom Off',
+                        'method': 'relayout'
+                    },
+                    {
+                        'args': [{'scrollZoom': True}],
+                        'label': 'Zoom On',
+                        'method': 'relayout'
+                    }
+                ],
+                'direction': 'down',
+                'showactive': True,
+                'x': 1.05,
+                'xanchor': 'right',
+                'y': 1.2,
+                'yanchor': 'top'
+            }
+        ]
+    )
 
-st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, use_container_width=True)
+
     # Define a threshold for high volume
     VOLUME_THRESHOLD = 1000
 
@@ -310,7 +309,7 @@ st.plotly_chart(fig, use_container_width=True)
 
         # Reorder and rename columns to match the screenshot
         high_volume_options = high_volume_options[['Ticker Symbol', 'contractSymbol', 'Expiration Date', 'lastTradeDate', 'Strike Price', 'lastPrice', 'bid', 'ask', 'change', 'percentChange', 'volume', 'openInterest', 'impliedVolatility', 'inTheMoney', 'Option Type']]
-        high_volume_options.columns = ['Ticker', 'Contract', 'DTE', 'Last Trade Date', 'Strike', 'Last', 'Bid', 'Ask', 'Change', 'Percent Change', 'Volume', 'Open Interest', 'IV', 'ITM', 'Type']
+        high_volume_options.columns = ['Ticker', 'Contract', 'DTE', 'Last Trade Date', 'Strike', 'Last', 'Bid', 'Ask', 'Change', 'Percent Change', 'Volume', 'Open Interest, 'IV', 'ITM', 'Type']
 
         return high_volume_options
 
@@ -327,8 +326,6 @@ st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("Top 10 Most Active Puts")
     st.write(top_puts)
-
-
 
     # Calculate key volume support
     def calculate_key_volume_support(data):
@@ -374,3 +371,5 @@ st.plotly_chart(fig, use_container_width=True)
 
 else:
     st.error("Failed to load data. Please check the ticker symbol and date range.")
+
+
