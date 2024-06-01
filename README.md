@@ -1,195 +1,121 @@
-## Installation for beginners ## **skip this section if you know what you are doing and you can read about the application below**
+Let's take a step-by-step approach to help you set up the Stock Charting App using VS Code. We will ensure Python is installed correctly, clone the repository, and get the app running. We will also clean up any potential issues caused by previous steps.
 
-1. **Clone the repository:**
-    - Open your web browser and go to the [Stonkape GitHub repository](https://github.com/mxmdgames/stonkape).
-    - Click on the green "Code" button on the right side of the page.
-    - You'll see a URL. Copy this URL. It should look something like `https://github.com/mxmdgames/stonkape.git`.
-    - Open your command line interface (CLI), which could be Command Prompt on Windows, Terminal on macOS, or a Linux terminal.
-    - Navigate to the directory where you want to clone the repository. You can do this by using the `cd` command followed by the path to the directory.
-      For example:
-      ```sh
-      cd path/to/your/directory
+## Step 1: Verify and Clean Up Python Installation
+
+1. **Uninstall Python (if needed)**:
+   - Open Control Panel and go to "Uninstall a program".
+   - Uninstall any existing Python installations.
+
+2. **Reinstall Python**:
+   - Download Python from the [official Python website](https://www.python.org/downloads/).
+   - Run the installer and make sure to check the box that says "Add Python to PATH".
+   - Select "Install Now" and follow the on-screen instructions.
+
+3. **Verify Installation**:
+   - Open Command Prompt or PowerShell.
+   - Verify Python installation:
+     ```sh
+     python --version
+     ```
+     Ensure it displays your Python version (e.g., Python 3.8.10).
+
+   - Verify Pip installation:
+     ```sh
+     pip --version
+     ```
+     Ensure it displays the Pip version (e.g., pip 21.1.1).
+
+## Step 2: Install VS Code
+
+1. **Download and Install VS Code**:
+   - Download Visual Studio Code from the [official website](https://code.visualstudio.com/).
+   - Install VS Code following the installation prompts.
+
+## Step 3: Clone the Repository
+
+1. **Open Command Prompt or PowerShell**:
+   - Create a project directory:
+     ```sh
+     mkdir stock_charting_app
       ```
-    - Once you're in the right directory, paste the copied URL into the command line and press Enter.
       ```sh
-      git clone https://github.com/mxmdgames/stonkape.git
-      ```
-    - Wait for the cloning process to complete. You should see a message indicating that the repository has been cloned successfully.
-    - Now, navigate into the cloned repository directory:
-      ```sh
-      cd stonkape
-      ```
+     cd stock_charting_app
+     ```
 
-2. **Install the required packages:**
-    - To run the application, you need to install some Python packages. These can be installed using `pip`, which is a package manager for Python.
-    - In your command line interface, enter the following command:
-      ```sh
-      pip install streamlit yfinance pandas plotly ta
-      ```
-    - This command will install the necessary packages for the application to work. Wait for the installation process to complete.
+2. **Clone the repository**:
+   ```sh
+   git clone https://github.com/mxmdgames/stonkape.git .
+   ```
 
-3. **Run the application:**
-    - Now that you have cloned the repository and installed the required packages, you can run the application.
-    - In your command line interface, enter the following command:
-      ```sh
-      streamlit run stock_charting_app2.py
-      ```
-    - This command starts the Streamlit application and launches it in your default web browser.
-    - You should see the application interface loaded in your browser, and you can start using it to analyze stock data.
+## Step 4: Open Project in VS Code
 
-By following these steps, you'll be able to clone the repository, install the necessary packages, and run the Stock Charting and Technical Analysis App on your local machine. If you encounter any issues or have questions, feel free to reach out for further assistance!
-Certainly! Here’s a detailed cheat sheet on various technical indicators for beginners, integrated into your existing structure:
+1. **Open VS Code**.
+2. **Open the Project Folder**:
+   - Click `File` > `Open Folder`.
+   - Navigate to your `stock_charting_app` directory and select it.
+   - Click "Select Folder" to open the project.
 
-# Stock Charting and Technical Analysis App
+## Step 5: Install Required Packages
 
-## Overview
-This app is designed for advanced technical analysis of stock data. It allows users to visualize stock charts, apply various technical indicators, and analyze options data with a focus on high-volume options.
+1. **Open the terminal in VS Code**:
+   - Click on `Terminal` > `New Terminal`.
+   
+2. **Install the necessary packages**:
+   ```sh
+   pip install streamlit yfinance pandas plotly ta
+   ```
 
-## Installation
+## Step 6: Run the Streamlit App
 
-1. **Clone the repository:**
-    ```sh
-    git clone https://github.com/mxmdgames/stonkape.git
-    cd stonkape
-    ```
+1. **In the terminal, navigate to your project directory if not already there**:
+   ```sh
+   cd stock_charting_app
+   ```
 
-2. **Install the required packages:**
-    ```sh
-    pip install streamlit yfinance pandas plotly ta
-    ```
+2. **Run the Streamlit app**:
+   ```sh
+   streamlit run stock_charting_app2.py
+   ```
 
-3. **Run the application:**
-    ```sh
-    streamlit run stock_charting_app2.py
-    ```
+## Troubleshooting
 
-## Features
+### Python or Pip Command Not Found
 
-- **Stock Data Visualization:** Displays candlestick charts with options to add technical indicators.
-- **Technical Indicators:** Includes SMA, EMA, RSI, MACD, Bollinger Bands, Stochastic Oscillator, Ichimoku Cloud, and Parabolic SAR.
-- **Volume Analysis:** Option to display volume and calculate key volume support levels.
-- **Options Data:** Identifies high-volume call and put options.
+- **Symptom**: Running `python --version` or `pip --version` returns a "command not found" error.
+- **Solution**:
+  1. Ensure Python and Pip are installed from the [official Python website](https://www.python.org/downloads/).
+  2. Verify the installation paths are added to the system's PATH environment variable.
 
-## Usage
+### Repository Cloning Issues
 
-### User Interface
+- **Symptom**: Cloning the repository fails.
+- **Solution**:
+  1. Ensure Git is installed by running `git --version`.
+  2. Verify the URL is correct and try again.
 
-1. **Stock Ticker Input:**
-    - Enter the stock ticker symbol (e.g., "AAPL").
+### Package Installation Errors
 
-2. **Time Frame Selection:**
-    - Select the desired time frame from the dropdown menu.
+- **Symptom**: Running `pip install` commands fail.
+- **Solution**:
+  1. Ensure you have an active internet connection.
+  2. Check if you have permission to install packages globally; if not, run your terminal or command prompt as an administrator.
 
-3. **Refresh Data:**
-    - Click the "Refresh Data" button to fetch the latest stock data.
+### Streamlit App Fails to Launch
 
-4. **Technical Indicators:**
-    - Select the desired indicators from the sidebar to overlay on the stock chart.
+- **Symptom**: Running `streamlit run stock_charting_app2.py` fails.
+- **Solution**:
+  1. Ensure all dependencies are correctly installed.
+  2. Check for any syntax errors in `stock_charting_app2.py`.
+  3. Review Streamlit error messages for specific issues.
 
-5. **Volume Display:**
-    - Toggle the checkbox to show or hide volume bars on the chart.
+### Port Already in Use
 
-6. **Trend Line Drawing:**
-    - Enable or disable trend line drawing from the sidebar.
+- **Symptom**: Error indicating the port is already in use.
+- **Solution**:
+  1. Stop any processes using the default Streamlit port (8501).
+  2. Run Streamlit on a different port:
+     ```sh
+     streamlit run stock_charting_app2.py --server.port 8502
+     ```
 
-### Key Functionalities
-
-- **Fetch Stock Data:**
-    - Retrieves stock data from Yahoo Finance based on user input and selected time frame.
-
-- **Technical Indicator Calculations:**
-    - Implements various technical indicators using the `ta` library and integrates them into the chart.
-
-- **Options Data Analysis:**
-    - Fetches options data, filters high-volume options, and displays the top 10 most active calls and puts.
-
-- **Support and Resistance Levels:**
-    - Identifies and displays key support and resistance levels based on volume and price action.
-
-## Technical Indicators Cheat Sheet
-
-### Simple Moving Average (SMA)
-- **Bullish Signal**: Price crosses above SMA, indicating potential upward momentum.
-- **Bearish Signal**: Price crosses below SMA, suggesting potential downward momentum.
-
-### Exponential Moving Average (EMA)
-- **Bullish Signal**: Price crosses above EMA, indicating potential bullish momentum.
-- **Bearish Signal**: Price crosses below EMA, suggesting potential bearish momentum.
-
-### Relative Strength Index (RSI)
-- **Overbought Signal**: RSI above 70, suggesting potential overbought conditions and a possible reversal.
-- **Oversold Signal**: RSI below 30, indicating potential oversold conditions and a possible buying opportunity.
-
-### Moving Average Convergence Divergence (MACD)
-- **Bullish Signal**: MACD line crosses above the signal line, indicating potential upward momentum.
-- **Bearish Signal**: MACD line crosses below the signal line, suggesting potential downward momentum.
-
-### Stochastic Oscillator
-- **Overbought Signal**: Stochastic above 80, indicating potential overbought conditions and a possible reversal.
-- **Oversold Signal**: Stochastic below 20, suggesting potential oversold conditions and a possible buying opportunity.
-
-### Ichimoku Cloud (Kumo)
-- **Bullish Signal**: Price above the cloud indicates potential bullish momentum and an uptrend.
-- **Bearish Signal**: Price below the cloud indicates potential bearish momentum and a downtrend.
-- **Cloud Twists**: Changes in the orientation of the cloud can signal shifts in market sentiment. Bullish twist when Senkou Span A crosses above Senkou Span B; bearish twist when it crosses below.
-
-### Parabolic Stop and Reverse (Parabolic SAR)
-- **Bullish Signal**: SAR below price, indicating potential upward momentum.
-- **Bearish Signal**: SAR above price, suggesting potential downward momentum.
-
-## Custom Styling
-
-The app applies custom CSS to ensure a professional look and feel. The background color, button styles, and input field styles are customized for better user experience.
-
-## Example Code Snippet
-
-```python
-import streamlit as st
-import yfinance as yf
-import pandas as pd
-import plotly.graph_objects as go
-import ta
-from functools import lru_cache
-
-# Terminal start: streamlit run stock_charting_app2.py
-
-# Set page config
-st.set_page_config(page_title="Stock Charting and Technical Analysis App", layout="wide")
-
-# Custom CSS for a professional look
-st.markdown(
-    """
-    <style>
-    body {
-        background-color: #1e1e1e;
-        color: #f0f0f0;
-    }
-    .stButton>button {
-        background-color: #4CAF50;
-        color: #f0f0f0;
-    }
-    .stTextInput>div>div>input {
-        background-color: #333333;
-        color: #f0f0f0;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-# Title and description
-st.title("Stock Charting and Technical Analysis")
-st.subheader("An advanced tool for technical analysis")
-```
-
-For a detailed implementation, refer to the full script provided in the repository.
-
-## GME IS FOR THE CHILDREN
-
-## Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request with any enhancements, bug fixes, or new features.
-
-## Contact
-
-For any questions or feedback, please reach out to [warrenmadx@icloud.com].
+By following these steps and troubleshooting tips, you should be able to set up and run the Stock Charting App successfully. If you encounter further issues, consult the documentation or seek help from the community.
