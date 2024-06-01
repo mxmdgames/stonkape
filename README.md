@@ -9,8 +9,9 @@ This app is designed for advanced technical analysis of stock data. It allows us
 
 1. **Clone the repository:**
     ```sh
-    git clone <repository-url>
-    cd <repository-directory>
+    git clone https://github.com/mxmdgames/stonkape.git
+    cd stonkape
+
     ```
 
 2. **Install the required packages:**
