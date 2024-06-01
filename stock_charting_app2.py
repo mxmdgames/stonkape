@@ -5,8 +5,6 @@ import plotly.graph_objects as go
 import ta
 from functools import lru_cache
 
-# Terminal start: streamlit run stock_charting_app2.py
-
 # Set page config
 st.set_page_config(page_title="Stock Charting and Technical Analysis App", layout="wide")
 
@@ -143,26 +141,20 @@ if not data.empty:
         so = ta.momentum.StochasticOscillator(data['High'], data['Low'], data['Close'])
         return so.stoch(), so.stoch_signal()
 
-    def calculate_ichimoku(data):
-        ichimoku = ta.trend.IchimokuIndicator(data['High'], data['Low'])
-        return ichimoku.ichimoku_a(), ichimoku.ichimoku_b(), ichimoku.ichimoku_base_line(), ichimoku.ichimoku_conversion_line()
-
-    def calculate_parabolic_sar(data):
-        if data.empty or 'High' not in data.columns or 'Low' not in data.columns or 'Close' not in data.columns:
-            st.error("Insufficient data to calculate Parabolic SAR.")
-            return pd.Series([None] * len(data))
-        return ta.trend.PSARIndicator(data['High'], data['Low'], data['Close']).psar()
+    def calculate_obv(data):
+        return ta.volume.OnBalanceVolumeIndicator(data['Close'], data['Volume']).on_balance_volume()
 
     data['SMA'] = calculate_sma(data, window=20)
     data['EMA'] = calculate_ema(data, window=20)
     data['RSI'] = calculate_rsi(data, window=14)
+    data['MACD'], data['MACD_Signal'], data['MACD_Hist'] = calculate_macd(data)
+    data['Stoch'], data['Stoch_Signal'] = calculate_stochastic_oscillator(data)
     data['BB_High'], data['BB_Low'] = calculate_bbands(data)
-    data['Ichimoku_A'], data['Ichimoku_B'], data['Ichimoku_Base'], data['Ichimoku_Conv'] = calculate_ichimoku(data)
-    data['Parabolic_SAR'] = calculate_parabolic_sar(data)
+    data['OBV'] = calculate_obv(data)
 
     # Add checkboxes for indicators
     st.sidebar.title("Technical Indicators")
-    selected_indicators = st.sidebar.multiselect("Select Indicators", ['SMA', 'EMA', 'RSI', 'BBands', 'Ichimoku Cloud', 'Parabolic SAR'])
+    selected_indicators = st.sidebar.multiselect("Select Indicators", ['SMA', 'EMA', 'RSI', 'MACD','Stochastic Oscillator', 'BBands', 'Ichimoku Cloud', 'Parabolic SAR', 'OBV'])
 
     # Add volume checkbox
     show_volume = st.sidebar.checkbox("Show Volume")
@@ -194,8 +186,6 @@ if not data.empty:
         fig.add_trace(go.Scatter(x=data[datetime_col], y=data['SMA'], mode='lines', name='SMA', line=dict(color='orange')))
     if 'EMA' in selected_indicators:
         fig.add_trace(go.Scatter(x=data[datetime_col], y=data['EMA'], mode='lines', name='EMA', line=dict(color='purple')))
-    if 'RSI' in selected_indicators:
-        fig.add_trace(go.Scatter(x=data[datetime_col], y=data['RSI'], mode='lines', name='RSI', line=dict(color='blue')))
     if 'BBands' in selected_indicators:
         fig.add_trace(go.Scatter(x=data[datetime_col], y=data['BB_High'], mode='lines', name='BB High', line=dict(color='red')))
         fig.add_trace(go.Scatter(x=data[datetime_col], y=data['BB_Low'], mode='lines', name='BB Low', line=dict(color='red')))
@@ -228,31 +218,76 @@ if not data.empty:
             showgrid=False,
         ),
         xaxis_rangeslider_visible=False,
-        updatemenus=[
-            {
-                'buttons': [
-                    {
-                        'args': [{'scrollZoom': False}],
-                        'label': 'Zoom Off',
-                        'method': 'relayout'
-                    },
-                    {
-                        'args': [{'scrollZoom': True}],
-                        'label': 'Zoom On',
-                        'method': 'relayout'
-                    }
-                ],
-                'direction': 'down',
-                'showactive': True,
-                'x': 1.05,
-                'xanchor': 'right',
-                'y': 1.2,
-                'yanchor': 'top'
-            }
-        ]
+        dragmode='drawline' if draw_trend_line else 'zoom'  # Enable line drawing mode if trend line drawing is enabled
     )
 
-    st.plotly_chart(fig, use_container_width=True)
+    # Plot additional technical indicators in separate subplots
+    # RSI subplot
+    rsi_fig = go.Figure()
+    if 'RSI' in selected_indicators:
+        rsi_fig.add_trace(go.Scatter(x=data[datetime_col], y=data['RSI'], mode='lines', name='RSI', line=dict(color='blue')))
+        rsi_fig.update_layout(
+            title="Relative Strength Index (RSI)",
+            yaxis_title='RSI',
+            xaxis_title='Date',
+            template='plotly_dark',
+            xaxis_rangeslider_visible=False,
+        )
+
+    # MACD subplot
+    macd_fig = go.Figure()
+    if 'MACD' in selected_indicators:
+        macd_fig.add_trace(go.Scatter(x=data[datetime_col], y=data['MACD'], mode='lines', name='MACD', line=dict(color='blue')))
+        macd_fig.add_trace(go.Scatter(x=data[datetime_col], y=data['MACD_Signal'], mode='lines', name='MACD Signal', line=dict(color='red')))
+        macd_fig.add_trace(go.Bar(x=data[datetime_col], y=data['MACD_Hist'], name='MACD Histogram'))
+        macd_fig.update_layout(
+            title="MACD (Moving Average Convergence Divergence)",
+            yaxis_title='MACD',
+            xaxis_title='Date',
+            template='plotly_dark',
+            xaxis_rangeslider_visible=False,
+        )
+
+    # Stochastic Oscillator subplot
+    stoch_fig = go.Figure()
+    if 'Stochastic Oscillator' in selected_indicators:
+        stoch_fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Stoch'], mode='lines', name='Stochastic Oscillator', line=dict(color='blue')))
+        stoch_fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Stoch_Signal'], mode='lines', name='Stochastic Signal', line=dict(color='red')))
+        stoch_fig.update_layout(
+            title="Stochastic Oscillator",
+            yaxis_title='Stochastic Oscillator',
+            xaxis_title='Date',
+            template='plotly_dark',
+            xaxis_rangeslider_visible=False,
+        )
+
+    # OBV subplot
+    obv_fig = go.Figure()
+    if 'OBV' in selected_indicators:
+        obv_fig.add_trace(go.Scatter(x=data[datetime_col], y=data['OBV'], mode='lines', name='OBV', line=dict(color='blue')))
+        obv_fig.update_layout(
+            title="On-Balance Volume (OBV)",
+            yaxis_title='OBV',
+            xaxis_title='Date',
+            template='plotly_dark',
+            xaxis_rangeslider_visible=False,
+        )
+
+
+    # Render additional subplots
+    if 'RSI' in selected_indicators:
+        st.plotly_chart(rsi_fig, use_container_width=True)
+    if 'MACD' in selected_indicators:
+        st.plotly_chart(macd_fig, use_container_width=True)
+    if 'Stochastic Oscillator' in selected_indicators:
+        st.plotly_chart(stoch_fig, use_container_width=True)
+    if 'OBV' in selected_indicators:
+        st.plotly_chart(obv_fig, use_container_width=True)
+
+    # Update Plotly chart config for scroll zoom behavior
+    config = dict({'scrollZoom': not draw_trend_line})
+
+    st.plotly_chart(fig, use_container_width=True, config=config)
 
     # Define a threshold for high volume
     VOLUME_THRESHOLD = 1000
@@ -371,5 +406,3 @@ if not data.empty:
 
 else:
     st.error("Failed to load data. Please check the ticker symbol and date range.")
-
-
