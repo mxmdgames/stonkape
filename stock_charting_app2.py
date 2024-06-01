@@ -51,7 +51,7 @@ time_frame_mapping = {
     "1 Year": "1d",
     "YTD": "1d",
     "5Y": "1d",
-    "4 Hour": "4h"
+    
 }
 
 period_mapping = {
@@ -63,7 +63,7 @@ period_mapping = {
     "1 Year": "1y",
     "YTD": "ytd",
     "5Y": "5y",
-    "4 Hour": "1mo"
+    
 }
 
 # Initialize period and interval
@@ -158,15 +158,13 @@ if not data.empty:
     data['SMA'] = calculate_sma(data, window=20)
     data['EMA'] = calculate_ema(data, window=20)
     data['RSI'] = calculate_rsi(data, window=14)
-    data['MACD'], data['MACD_Signal'], data['MACD_Diff'] = calculate_macd(data)
     data['BB_High'], data['BB_Low'] = calculate_bbands(data)
-    data['Stoch'], data['Stoch_Signal'] = calculate_stochastic_oscillator(data)
     data['Ichimoku_A'], data['Ichimoku_B'], data['Ichimoku_Base'], data['Ichimoku_Conv'] = calculate_ichimoku(data)
     data['Parabolic_SAR'] = calculate_parabolic_sar(data)
 
     # Add checkboxes for indicators
     st.sidebar.title("Technical Indicators")
-    selected_indicators = st.sidebar.multiselect("Select Indicators", ['SMA', 'EMA', 'RSI', 'MACD', 'BBands', 'Stochastic Oscillator', 'Ichimoku Cloud', 'Parabolic SAR'])
+    selected_indicators = st.sidebar.multiselect("Select Indicators", ['SMA', 'EMA', 'RSI', 'BBands', 'Ichimoku Cloud', 'Parabolic SAR'])
 
     # Add volume checkbox
     show_volume = st.sidebar.checkbox("Show Volume")
@@ -200,16 +198,9 @@ if not data.empty:
         fig.add_trace(go.Scatter(x=data[datetime_col], y=data['EMA'], mode='lines', name='EMA', line=dict(color='purple')))
     if 'RSI' in selected_indicators:
         fig.add_trace(go.Scatter(x=data[datetime_col], y=data['RSI'], mode='lines', name='RSI', line=dict(color='blue')))
-    if 'MACD' in selected_indicators:
-        fig.add_trace(go.Scatter(x=data[datetime_col], y=data['MACD'], mode='lines', name='MACD', line=dict(color='green')))
-        fig.add_trace(go.Scatter(x=data[datetime_col], y=data['MACD_Signal'], mode='lines', name='MACD Signal', line=dict(color='red')))
-        fig.add_trace(go.Bar(x=data[datetime_col], y=data['MACD_Diff'], name='MACD Diff', marker=dict(color='gray')))
     if 'BBands' in selected_indicators:
         fig.add_trace(go.Scatter(x=data[datetime_col], y=data['BB_High'], mode='lines', name='BB High', line=dict(color='red')))
         fig.add_trace(go.Scatter(x=data[datetime_col], y=data['BB_Low'], mode='lines', name='BB Low', line=dict(color='red')))
-    if 'Stochastic Oscillator' in selected_indicators:
-        fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Stoch'], mode='lines', name='Stochastic Oscillator', line=dict(color='cyan')))
-        fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Stoch_Signal'], mode='lines', name='Stochastic Oscillator Signal', line=dict(color='magenta')))
     if 'Ichimoku Cloud' in selected_indicators:
         fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Ichimoku_A'], mode='lines', name='Ichimoku A', line=dict(color='pink')))
         fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Ichimoku_B'], mode='lines', name='Ichimoku B', line=dict(color='brown')))
