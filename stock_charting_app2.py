@@ -144,12 +144,26 @@ if not data.empty:
     def calculate_obv(data):
         return ta.volume.OnBalanceVolumeIndicator(data['Close'], data['Volume']).on_balance_volume()
 
+    def calculate_ichimoku(data):
+        ichimoku = ta.trend.IchimokuIndicator(data['High'], data['Low'])
+        return ichimoku.ichimoku_a(), ichimoku.ichimoku_b(), ichimoku.ichimoku_base_line(), ichimoku.ichimoku_conversion_line()
+
+    def calculate_parabolic_sar(data):
+        if data.empty or 'High' not in data.columns or 'Low' not in data.columns or 'Close' not in data.columns:
+            st.error("Insufficient data to calculate Parabolic SAR.")
+            return pd.Series([None] * len(data))
+        return ta.trend.PSARIndicator(data['High'], data['Low'], data['Close']).psar()
+    def calculate_obv(data):
+        return ta.volume.OnBalanceVolumeIndicator(data['Close'], data['Volume']).on_balance_volume()
+
     data['SMA'] = calculate_sma(data, window=20)
     data['EMA'] = calculate_ema(data, window=20)
     data['RSI'] = calculate_rsi(data, window=14)
     data['MACD'], data['MACD_Signal'], data['MACD_Hist'] = calculate_macd(data)
     data['Stoch'], data['Stoch_Signal'] = calculate_stochastic_oscillator(data)
     data['BB_High'], data['BB_Low'] = calculate_bbands(data)
+    data['Ichimoku_A'], data['Ichimoku_B'], data['Ichimoku_Base'], data['Ichimoku_Conv'] = calculate_ichimoku(data)
+    data['Parabolic_SAR'] = calculate_parabolic_sar(data)
     data['OBV'] = calculate_obv(data)
 
     # Add checkboxes for indicators
