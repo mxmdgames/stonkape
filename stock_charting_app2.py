@@ -302,7 +302,7 @@ if not data.empty:
     config = dict({'scrollZoom': not draw_trend_line})
 
     st.plotly_chart(fig, use_container_width=True, config=config)
-
+"""
     # Define a threshold for high volume
     VOLUME_THRESHOLD = 1000
 
@@ -419,4 +419,4 @@ if not data.empty:
     st.write("Min Levels:", min_list)
 
 else:
-    st.error("Failed to load data. Please check the ticker symbol and date range.")
+    st.error("Failed to load data. Please check the ticker symbol and date range.")"""
