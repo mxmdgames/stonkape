@@ -1,6 +1,7 @@
 import yfinance as yf
 import pandas as pd
 import streamlit as st
+from datetime import datetime
 
 def fetch_options_data(ticker, volume_threshold, oi_threshold):
     stock = yf.Ticker(ticker)
@@ -10,16 +11,31 @@ def fetch_options_data(ticker, volume_threshold, oi_threshold):
         st.error("No options data found for the given ticker.")
         return None, None
 
-    options_date = options_expiration_dates[0]
-    options_chain = stock.option_chain(options_date)
+    all_calls = []
+    all_puts = []
 
-    calls = options_chain.calls
-    puts = options_chain.puts
+    for options_date in options_expiration_dates:
+        options_chain = stock.option_chain(options_date)
 
-    high_volume_calls = calls[(calls['volume'] >= volume_threshold) & (calls['openInterest'] >= oi_threshold)].copy()
-    high_volume_puts = puts[(puts['volume'] >= volume_threshold) & (puts['openInterest'] >= oi_threshold)].copy()
+        calls = options_chain.calls
+        puts = options_chain.puts
 
-    return high_volume_calls, high_volume_puts
+        # Calculate DTE
+        dte = (pd.to_datetime(options_date) - datetime.now()).days
+
+        calls['DTE'] = dte
+        puts['DTE'] = dte
+
+        high_volume_calls = calls[(calls['volume'] >= volume_threshold) & (calls['openInterest'] >= oi_threshold)].copy()
+        high_volume_puts = puts[(puts['volume'] >= volume_threshold) & (puts['openInterest'] >= oi_threshold)].copy()
+
+        all_calls.append(high_volume_calls)
+        all_puts.append(high_volume_puts)
+
+    all_calls_df = pd.concat(all_calls)
+    all_puts_df = pd.concat(all_puts)
+
+    return all_calls_df, all_puts_df
 
 def display_options_data(ticker, volume_threshold, oi_threshold):
     try:
@@ -30,12 +46,14 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
 
         st.subheader("High Volume Call Options")
         if not high_volume_calls.empty:
+            high_volume_calls = high_volume_calls[['contractSymbol', 'volume', 'openInterest', 'DTE']]
             st.write(high_volume_calls)
         else:
             st.write("No high volume call options found.")
 
         st.subheader("High Volume Put Options")
         if not high_volume_puts.empty:
+            high_volume_puts = high_volume_puts[['contractSymbol', 'volume', 'openInterest', 'DTE']]
             st.write(high_volume_puts)
         else:
             st.write("No high volume put options found.")
