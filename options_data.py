@@ -12,7 +12,6 @@ def decode_contract_symbol(contract_symbol):
 
     return ticker_symbol, expiration_date, option_type, strike_price
 
-@st.cache
 def get_high_volume_options(ticker_symbol, volume_threshold=1000):
     # Create a ticker object
     ticker = yf.Ticker(ticker_symbol)
