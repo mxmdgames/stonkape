@@ -23,8 +23,8 @@ def fetch_options_data(ticker, volume_threshold, oi_threshold):
         # Calculate DTE
         dte = (pd.to_datetime(options_date) - datetime.now()).days
 
-        calls['DTE'] = dte
-        puts['DTE'] = dte
+        calls['DTE'] = f"{dte}DTE"
+        puts['DTE'] = f"{dte}DTE"
 
         high_volume_calls = calls[(calls['volume'] >= volume_threshold) & (calls['openInterest'] >= oi_threshold)].copy()
         high_volume_puts = puts[(puts['volume'] >= volume_threshold) & (puts['openInterest'] >= oi_threshold)].copy()
