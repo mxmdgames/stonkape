@@ -4,7 +4,8 @@ import pandas as pd
 import plotly.graph_objects as go
 import ta
 from functools import lru_cache
-from options_data import get_high_volume_options
+from options_data import display_options_data
+
 
 
 # Set page config
