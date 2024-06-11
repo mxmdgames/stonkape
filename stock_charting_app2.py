@@ -4,7 +4,8 @@ import pandas as pd
 import plotly.graph_objects as go
 import ta
 from functools import lru_cache
-from options_data import display_options_data
+import options_data
+
 
 
 
@@ -423,7 +424,15 @@ if not data.empty:
 
 #else:
  #   st.error("Failed to load data. Please check the ticker symbol and date range.")"""
-if st.button("Options Data"):
+# Define a threshold for high volume
+    VOLUME_THRESHOLD = 1000
+
+    # Fetch high volume options
+    if st.button("Options Data"):
         st.subheader("Options Data")
-options_data.display_options_data(ticker, volume_threshold)
+        options_data.display_options_data(ticker, VOLUME_THRESHOLD)
+
+else:
+    st.error("Failed to load data. Please check the ticker symbol and date range.")
+
   
