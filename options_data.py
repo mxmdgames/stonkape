@@ -79,16 +79,3 @@ def main(ticker, volume_threshold):
     st.title("High Volume Options Viewer")
     
     display_options_data(ticker, volume_threshold)
-
-if __name__ == "__main__":
-    st.title("High Volume Options Viewer")
-    
-    ticker = st.text_input("Enter a stock ticker symbol (e.g., AAPL):")
-    volume_threshold = st.slider("Set volume threshold", min_value=100, max_value=10000, value=1000, step=100)
-
-    if st.button("Options Data"):
-        st.subheader("Options Data")
-        if ticker:
-            main(ticker, volume_threshold)
-        else:
-            st.warning("Please enter a ticker symbol.")
