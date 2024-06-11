@@ -420,5 +420,5 @@ if not data.empty:
 
 #else:
  #   st.error("Failed to load data. Please check the ticker symbol and date range.")"""
-  if st.button("Options Data"):
+if st.button("Options Data"):
         st.subheader("Options Data")
