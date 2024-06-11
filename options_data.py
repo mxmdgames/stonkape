@@ -46,14 +46,12 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
 
         st.subheader("High Volume Call Options")
         if not high_volume_calls.empty:
-            high_volume_calls = high_volume_calls[['contractSymbol', 'volume', 'openInterest', 'DTE']]
             st.write(high_volume_calls)
         else:
             st.write("No high volume call options found.")
 
         st.subheader("High Volume Put Options")
         if not high_volume_puts.empty:
-            high_volume_puts = high_volume_puts[['contractSymbol', 'volume', 'openInterest', 'DTE']]
             st.write(high_volume_puts)
         else:
             st.write("No high volume put options found.")
