@@ -424,8 +424,6 @@ if not data.empty:
 
 #else:
  #   st.error("Failed to load data. Please check the ticker symbol and date range.")"""
-# Define a threshold for high volume
-VOLUME_THRESHOLD = 1000
 
 # Fetch high volume options if button is pressed
 if st.button("Options Data"):
