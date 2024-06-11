@@ -2,7 +2,7 @@ import yfinance as yf
 import pandas as pd
 import streamlit as st
 
-def fetch_options_data(ticker, volume_threshold):
+def fetch_options_data(ticker, volume_threshold, oi_threshold):
     stock = yf.Ticker(ticker)
     options_expiration_dates = stock.options
 
@@ -16,14 +16,14 @@ def fetch_options_data(ticker, volume_threshold):
     calls = options_chain.calls
     puts = options_chain.puts
 
-    high_volume_calls = calls[calls['volume'] >= volume_threshold].copy()
-    high_volume_puts = puts[puts['volume'] >= volume_threshold].copy()
+    high_volume_calls = calls[(calls['volume'] >= volume_threshold) & (calls['openInterest'] >= oi_threshold)].copy()
+    high_volume_puts = puts[(puts['volume'] >= volume_threshold) & (puts['openInterest'] >= oi_threshold)].copy()
 
     return high_volume_calls, high_volume_puts
 
-def display_options_data(ticker, volume_threshold):
+def display_options_data(ticker, volume_threshold, oi_threshold):
     try:
-        high_volume_calls, high_volume_puts = fetch_options_data(ticker, volume_threshold)
+        high_volume_calls, high_volume_puts = fetch_options_data(ticker, volume_threshold, oi_threshold)
 
         if high_volume_calls is None or high_volume_puts is None:
             return
