@@ -47,7 +47,8 @@ def get_high_volume_options(ticker_symbol, volume_threshold):
         high_volume_options = pd.concat([high_volume_options, high_volume_options_date])
 
     # Decode contract symbols
-    high_volume_options[['Ticker Symbol', 'Expiration Date', 'Option Type', 'Strike Price']] = high_volume_options['contractSymbol'].apply(decode_contract_symbol)
+    if 'contractSymbol' in high_volume_options.columns:
+        high_volume_options[['Ticker Symbol', 'Expiration Date', 'Option Type', 'Strike Price']] = high_volume_options['contractSymbol'].apply(decode_contract_symbol)
 
     # Reorder and rename columns to match the screenshot
     high_volume_options = high_volume_options[['Ticker Symbol', 'contractSymbol', 'Expiration Date', 'lastTradeDate', 'Strike Price', 'lastPrice', 'bid', 'ask', 'change', 'percentChange', 'volume', 'openInterest', 'impliedVolatility', 'inTheMoney', 'Option Type']]
