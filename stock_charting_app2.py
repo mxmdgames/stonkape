@@ -34,7 +34,7 @@ st.title("Stock Charting and Technical Analysis")
 st.subheader("An advanced tool for technical analysis")
 
 # User input for stock ticker and time frame
-ticker = st.text_input("Enter Stock Ticker", value="AAPL", max_chars=10)
+ticker = st.text_input("Enter Stock Ticker", value="GME", max_chars=10)
 
 # Time frame selection
 time_frame = st.selectbox("Select Time Frame", ["Intraday", "1 Day", "5 Day", "1 Month", "6 Months", "1 Year", "YTD", "5Y", "4 Hour"])
