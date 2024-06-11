@@ -2,6 +2,9 @@ import streamlit as st
 import pandas as pd
 import yfinance as yf
 
+# Set a volume threshold for filtering high volume options
+VOLUME_THRESHOLD = 1000  # Adjust this value as needed
+
 # Function to decode contract symbol
 def decode_contract_symbol(contract_symbol):
     from datetime import datetime
@@ -73,3 +76,15 @@ def display_options_data(ticker):
 
     st.subheader("Top 10 Most Active Puts")
     st.write(top_puts)
+
+# Streamlit app setup
+def main():
+    st.title("High Volume Options Viewer")
+
+    ticker = st.text_input("Enter a stock ticker symbol (e.g., AAPL):")
+
+    if ticker:
+        display_options_data(ticker)
+
+if __name__ == "__main__":
+    main()
