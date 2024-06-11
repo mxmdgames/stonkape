@@ -424,21 +424,21 @@ if not data.empty:
 
 #else:
  #   st.error("Failed to load data. Please check the ticker symbol and date range.")"""
-  # Store the initial volume threshold in the session state
-    if 'volume_threshold' not in st.session_state:
-        st.session_state.volume_threshold = 5000
+# Store the initial volume threshold in the session state
+if 'volume_threshold' not in st.session_state:
+    st.session_state.volume_threshold = 5000
 
-    # Slider for volume threshold
-    VOLUME_THRESHOLD = st.slider("Volume Threshold", min_value=0, max_value=10000, value=st.session_state.volume_threshold, step=100)
+# Slider for volume threshold
+VOLUME_THRESHOLD = st.slider("Volume Threshold", min_value=0, max_value=10000, value=st.session_state.volume_threshold, step=100)
 
-    # Update session state with the new volume threshold
-    st.session_state.volume_threshold = VOLUME_THRESHOLD
+# Update session state with the new volume threshold
+st.session_state.volume_threshold = VOLUME_THRESHOLD
 
-    # Fetch high volume options if button is pressed
-    if st.button("Options Data") or 'options_data_shown' in st.session_state:
-        st.subheader("Options Data")
-        options_data.display_options_data(ticker, VOLUME_THRESHOLD)
-        st.session_state.options_data_shown = True
+# Fetch high volume options if button is pressed
+if st.button("Options Data") or 'options_data_shown' in st.session_state:
+    st.subheader("Options Data")
+    options_data.display_options_data(ticker, VOLUME_THRESHOLD)
+    st.session_state.options_data_shown = True
 else:
     st.error("No data found for the given ticker and time frame.")
 
