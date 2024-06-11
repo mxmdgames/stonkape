@@ -424,14 +424,11 @@ if not data.empty:
 
 #else:
  #   st.error("Failed to load data. Please check the ticker symbol and date range.")"""
-
 # Fetch high volume options if button is pressed
-if st.button("Options Data"):
-    st.subheader("Options Data")
-    VOLUME_THRESHOLD = st.slider("Volume Threshold", min_value=0, max_value=10000, value=5000, step=100)
-    options_data.display_options_data(ticker, VOLUME_THRESHOLD)
-
-
+    if st.button("Options Data"):
+        st.subheader("Options Data")
+        VOLUME_THRESHOLD = st.slider("Volume Threshold", min_value=0, max_value=10000, value=5000, step=100)
+        options_data.display_options_data(ticker, VOLUME_THRESHOLD)
 
 else:
     st.error("Failed to load data. Please check the ticker symbol and date range.")
