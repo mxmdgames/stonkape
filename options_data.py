@@ -2,9 +2,6 @@ import streamlit as st
 import pandas as pd
 import yfinance as yf
 
-# Set a volume threshold for filtering high volume options
-VOLUME_THRESHOLD = 1000  # Adjust this value as needed
-
 # Function to decode contract symbol
 def decode_contract_symbol(contract_symbol):
     from datetime import datetime
@@ -17,7 +14,7 @@ def decode_contract_symbol(contract_symbol):
     return ticker_symbol, expiration_date, option_type, strike_price
 
 @st.cache
-def get_high_volume_options(ticker_symbol):
+def get_high_volume_options(ticker_symbol, volume_threshold):
     # Create a ticker object
     ticker = yf.Ticker(ticker_symbol)
 
@@ -37,8 +34,8 @@ def get_high_volume_options(ticker_symbol):
         puts_data = options_data.puts
 
         # Filter for high volume options
-        high_volume_calls = calls_data[calls_data['volume'] > VOLUME_THRESHOLD].copy()
-        high_volume_puts = puts_data[puts_data['volume'] > VOLUME_THRESHOLD].copy()
+        high_volume_calls = calls_data[calls_data['volume'] > volume_threshold].copy()
+        high_volume_puts = puts_data[puts_data['volume'] > volume_threshold].copy()
 
         # Add option type column
         if not high_volume_calls.empty:
@@ -62,9 +59,9 @@ def get_high_volume_options(ticker_symbol):
     return high_volume_options
 
 # Main function to display options data
-def display_options_data(ticker):
+def display_options_data(ticker, volume_threshold):
     # Fetch high volume options
-    high_volume_options = get_high_volume_options(ticker)
+    high_volume_options = get_high_volume_options(ticker, volume_threshold)
 
     # Create tables for top calls and puts
     top_calls = high_volume_options[high_volume_options['Type'] == 'Call'].nlargest(10, 'Volume')
@@ -82,9 +79,14 @@ def main():
     st.title("High Volume Options Viewer")
 
     ticker = st.text_input("Enter a stock ticker symbol (e.g., AAPL):")
+    volume_threshold = st.slider("Set volume threshold", min_value=100, max_value=10000, value=1000, step=100)
 
-    if ticker:
-        display_options_data(ticker)
+    if st.button("Options Data"):
+        st.subheader("Options Data")
+        if ticker:
+            display_options_data(ticker, volume_threshold)
+        else:
+            st.warning("Please enter a ticker symbol.")
 
 if __name__ == "__main__":
     main()
