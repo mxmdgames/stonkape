@@ -1,7 +1,5 @@
-import streamlit as st
 import yfinance as yf
 import pandas as pd
-
 
 # Function to decode contract symbol
 def decode_contract_symbol(contract_symbol):
@@ -15,7 +13,7 @@ def decode_contract_symbol(contract_symbol):
     return ticker_symbol, expiration_date, option_type, strike_price
 
 @st.cache
-def get_high_volume_options(ticker_symbol, 1000):
+def get_high_volume_options(ticker_symbol, volume_threshold=1000):
     # Create a ticker object
     ticker = yf.Ticker(ticker_symbol)
 
@@ -58,36 +56,3 @@ def get_high_volume_options(ticker_symbol, 1000):
     high_volume_options.columns = ['Ticker', 'Contract', 'DTE', 'Last Trade Date', 'Strike', 'Last', 'Bid', 'Ask', 'Change', 'Percent Change', 'Volume', 'Open Interest', 'IV', 'ITM', 'Type']
 
     return high_volume_options
-
-# Main function to display options data
-def display_options_data(ticker, volume_threshold):
-    # Fetch high volume options
-    high_volume_options = options_data.get_high_volume_options(ticker, volume_threshold)
-
-    # Create tables for top calls and puts
-    top_calls = high_volume_options[high_volume_options['Type'] == 'Call'].nlargest(10, 'Volume')
-    top_puts = high_volume_options[high_volume_options['Type'] == 'Put'].nlargest(10, 'Volume')
-
-    # Display the tables
-    st.subheader("Top 10 Most Active Calls")
-    st.write(top_calls)
-
-    st.subheader("Top 10 Most Active Puts")
-    st.write(top_puts)
-
-# Streamlit app setup
-def main():
-    st.title("High Volume Options Viewer")
-
-    ticker = st.text_input("Enter a stock ticker symbol (e.g., AAPL):")
-    volume_threshold = st.slider("Set volume threshold", min_value=100, max_value=10000, value=1000, step=100)
-
-    if st.button("Options Data"):
-        st.subheader("Options Data")
-        if ticker:
-            display_options_data(ticker, volume_threshold)
-        else:
-            st.warning("Please enter a ticker symbol.")
-
-if __name__ == "__main__":
-    main()
