@@ -1,5 +1,7 @@
-import pandas as pd
+# options_data.py
+
 import yfinance as yf
+import pandas as pd
 
 def decode_contract_symbol(contract_symbol):
     from datetime import datetime
@@ -50,8 +52,8 @@ def get_high_volume_options(ticker_symbol, volume_threshold):
     high_volume_options[['Ticker Symbol', 'Expiration Date', 'Option Type', 'Strike Price']] = high_volume_options.apply(lambda row: decode_contract_symbol(row['contractSymbol']), axis=1, result_type='expand')
 
     # Reorder and rename columns to match the screenshot
-    high_volume_options = high_volume_options[['Ticker Symbol', 'Expiration Date', 'Option Type', 'Strike Price', 'Last Trade Date', 'Last', 'Bid', 'Ask', 'Change', 'Percent Change', 'Volume', 'Open Interest', 'IV', 'ITM']]
-    high_volume_options.columns = ['Ticker', 'DTE', 'Type', 'Strike', 'Last Trade Date', 'Last', 'Bid', 'Ask', 'Change', 'Percent Change', 'Volume', 'Open Interest', 'IV', 'ITM']
+    high_volume_options = high_volume_options[['Ticker Symbol', 'contractSymbol', 'Expiration Date', 'lastTradeDate', 'Strike Price', 'lastPrice', 'bid', 'ask', 'change', 'percentChange', 'volume', 'openInterest', 'impliedVolatility', 'inTheMoney', 'Option Type']]
+    high_volume_options.columns = ['Ticker', 'Contract', 'DTE', 'Last Trade Date', 'Strike', 'Last', 'Bid', 'Ask', 'Change', 'Percent Change', 'Volume', 'Open Interest', 'IV', 'ITM', 'Type']
 
     return high_volume_options
 
