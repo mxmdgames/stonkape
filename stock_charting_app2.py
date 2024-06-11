@@ -4,6 +4,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import ta
 from functools import lru_cache
+import options_data  # Import the options_data module
 
 # Set page config
 st.set_page_config(page_title="Stock Charting and Technical Analysis App", layout="wide")
@@ -422,3 +423,4 @@ if not data.empty:
  #   st.error("Failed to load data. Please check the ticker symbol and date range.")"""
 if st.button("Options Data"):
         st.subheader("Options Data")
+options_data.display_options_data(ticker)  # Call the display_options_data function from the options_data module
