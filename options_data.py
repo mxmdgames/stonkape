@@ -1,46 +1,51 @@
 import yfinance as yf
+import pandas as pd
 import streamlit as st
-import pandas as pd 
+
+def fetch_options_data(ticker, volume_threshold):
+    stock = yf.Ticker(ticker)
+    options_expiration_dates = stock.options
+
+    if not options_expiration_dates:
+        st.error("No options data found for the given ticker.")
+        return None, None
+
+    options_date = options_expiration_dates[0]
+    options_chain = stock.option_chain(options_date)
+
+    calls = options_chain.calls
+    puts = options_chain.puts
+
+    high_volume_calls = calls[calls['volume'] >= volume_threshold].copy()
+    high_volume_puts = puts[puts['volume'] >= volume_threshold].copy()
+
+    # Add a column for Option Type
+    high_volume_calls['Type'] = 'Call'
+    high_volume_puts['Type'] = 'Put'
+
+    return high_volume_calls, high_volume_puts
 
 def display_options_data(ticker, volume_threshold):
-    # Fetch options data
     try:
-        stock = yf.Ticker(ticker)
-        options_dates = stock.options
+        high_volume_calls, high_volume_puts = fetch_options_data(ticker, volume_threshold)
 
-        if not options_dates:
-            st.write("No options data available for this ticker.")
+        if high_volume_calls is None or high_volume_puts is None:
             return
 
-        # Collect options data for all available expiration dates
-        all_options_data = []
-        for exp_date in options_dates:
-            options_chain = stock.option_chain(exp_date)
-            calls = options_chain.calls
-            puts = options_chain.puts
-
-            # Filter by volume threshold
-            high_volume_calls = calls[calls['volume'] > volume_threshold]
-            high_volume_puts = puts[puts['volume'] > volume_threshold]
-
-            high_volume_calls['expirationDate'] = exp_date
-            high_volume_puts['expirationDate'] = exp_date
-
-            all_options_data.append(high_volume_calls)
-            all_options_data.append(high_volume_puts)
-
-        # Combine all high volume options into a single DataFrame
-        high_volume_options = pd.concat(all_options_data)
-
-        if high_volume_options.empty:
-            st.write(f"No options with volume greater than {volume_threshold} found.")
+        st.subheader("High Volume Call Options")
+        if not high_volume_calls.empty:
+            # Replace the contract symbol with "Call"
+            high_volume_calls['contractSymbol'] = 'Call'
+            st.write(high_volume_calls)
         else:
-            st.write(f"Options with volume greater than {volume_threshold}:")
-            st.write(high_volume_options)
+            st.write("No high volume call options found.")
 
+        st.subheader("High Volume Put Options")
+        if not high_volume_puts.empty:
+            # Replace the contract symbol with "Put"
+            high_volume_puts['contractSymbol'] = 'Put'
+            st.write(high_volume_puts)
+        else:
+            st.write("No high volume put options found.")
     except Exception as e:
         st.error(f"Error fetching options data: {e}")
-
-# Ensure the script does not execute when imported as a module
-if __name__ == "__main__":
-    display_options_data('AAPL', 5000)
