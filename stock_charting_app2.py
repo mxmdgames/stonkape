@@ -4,7 +4,8 @@ import pandas as pd
 import plotly.graph_objects as go
 import ta
 from functools import lru_cache
-from options_data import display_options_data
+from options_data import get_high_volume_options
+
 
 # Set page config
 st.set_page_config(page_title="Stock Charting and Technical Analysis App", layout="wide")
