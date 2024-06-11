@@ -1,6 +1,7 @@
 import streamlit as st
 import yfinance as yf
 import pandas as pd
+import options_data
 
 # Function to decode contract symbol
 def decode_contract_symbol(contract_symbol):
@@ -61,7 +62,7 @@ def get_high_volume_options(ticker_symbol, volume_threshold):
 # Main function to display options data
 def display_options_data(ticker, volume_threshold):
     # Fetch high volume options
-    high_volume_options = get_high_volume_options(ticker, volume_threshold)
+    high_volume_options = options_data.get_high_volume_options(ticker, volume_threshold)
 
     # Create tables for top calls and puts
     top_calls = high_volume_options[high_volume_options['Type'] == 'Call'].nlargest(10, 'Volume')
