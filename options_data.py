@@ -1,61 +1,45 @@
 import yfinance as yf
-import pandas as pd
-from datetime import datetime
+import streamlit as st
 
-def decode_contract_symbol(contract_symbol):
-    # Extract the ticker symbol, expiration date, option type, and strike price from the contract symbol
-    ticker_symbol = contract_symbol[:-15]
-    expiration_date = datetime.strptime(contract_symbol[-15:-9], '%y%m%d').date()
-    option_type = 'Call' if contract_symbol[-9] == 'C' else 'Put'
-    strike_price = int(contract_symbol[-8:]) / 1000
+def display_options_data(ticker, volume_threshold):
+    # Fetch options data
+    try:
+        stock = yf.Ticker(ticker)
+        options_dates = stock.options
 
-    return pd.Series([ticker_symbol, expiration_date, option_type, strike_price])
+        if not options_dates:
+            st.write("No options data available for this ticker.")
+            return
 
-def get_high_volume_options(ticker_symbol, volume_threshold):
-    # Create a ticker object
-    ticker = yf.Ticker(ticker_symbol)
+        # Collect options data for all available expiration dates
+        all_options_data = []
+        for exp_date in options_dates:
+            options_chain = stock.option_chain(exp_date)
+            calls = options_chain.calls
+            puts = options_chain.puts
 
-    # Get all expiry dates
-    expiry_dates = ticker.options
+            # Filter by volume threshold
+            high_volume_calls = calls[calls['volume'] > volume_threshold]
+            high_volume_puts = puts[puts['volume'] > volume_threshold]
 
-    # Initialize an empty DataFrame to store all high volume options
-    high_volume_options = pd.DataFrame()
+            high_volume_calls['expirationDate'] = exp_date
+            high_volume_puts['expirationDate'] = exp_date
 
-    # Loop through all expiry dates
-    for expiry_date in expiry_dates:
-        # Get options data for this expiry date
-        options_data = ticker.option_chain(expiry_date)
+            all_options_data.append(high_volume_calls)
+            all_options_data.append(high_volume_puts)
 
-        # The returned data is a named tuple containing two dataframes: calls and puts
-        calls_data = options_data.calls
-        puts_data = options_data.puts
+        # Combine all high volume options into a single DataFrame
+        high_volume_options = pd.concat(all_options_data)
 
-        # Filter for high volume options
-        high_volume_calls = calls_data[calls_data['volume'] > volume_threshold].copy()
-        high_volume_puts = puts_data[puts_data['volume'] > volume_threshold].copy()
+        if high_volume_options.empty:
+            st.write(f"No options with volume greater than {volume_threshold} found.")
+        else:
+            st.write(f"Options with volume greater than {volume_threshold}:")
+            st.write(high_volume_options)
 
-        # Add option type column
-        if not high_volume_calls.empty:
-            high_volume_calls.loc[:, 'Option Type'] = 'Call'
-        if not high_volume_puts.empty:
-            high_volume_puts.loc[:, 'Option Type'] = 'Put'
+    except Exception as e:
+        st.error(f"Error fetching options data: {e}")
 
-        # Concatenate calls and puts data
-        high_volume_options_date = pd.concat([high_volume_calls, high_volume_puts])
-
-        # Append to the overall DataFrame
-        high_volume_options = pd.concat([high_volume_options, high_volume_options_date])
-
-    # Decode contract symbols
-    if 'contractSymbol' in high_volume_options.columns:
-        high_volume_options[['Ticker Symbol', 'Expiration Date', 'Option Type', 'Strike Price']] = high_volume_options['contractSymbol'].apply(decode_contract_symbol)
-
-    # Reorder and rename columns to match the screenshot
-    high_volume_options = high_volume_options[['Ticker Symbol', 'contractSymbol', 'Expiration Date', 'lastTradeDate', 'Strike Price', 'lastPrice', 'bid', 'ask', 'change', 'percentChange', 'volume', 'openInterest', 'impliedVolatility', 'inTheMoney', 'Option Type']]
-    high_volume_options.columns = ['Ticker', 'Contract', 'DTE', 'Last Trade Date', 'Strike', 'Last', 'Bid', 'Ask', 'Change', 'Percent Change', 'Volume', 'Open Interest', 'IV', 'ITM', 'Type']
-
-    return high_volume_options
-
-def display_options_data(ticker_symbol, volume_threshold):
-    high_volume_options = get_high_volume_options(ticker_symbol, volume_threshold)
-    st.write(high_volume_options)
+# Ensure the script does not execute when imported as a module
+if __name__ == "__main__":
+    display_options_data('AAPL', 5000)
