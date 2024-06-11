@@ -19,10 +19,6 @@ def fetch_options_data(ticker, volume_threshold):
     high_volume_calls = calls[calls['volume'] >= volume_threshold].copy()
     high_volume_puts = puts[puts['volume'] >= volume_threshold].copy()
 
-    # Add a column for Option Type
-    high_volume_calls['Type'] = 'Call'
-    high_volume_puts['Type'] = 'Put'
-
     return high_volume_calls, high_volume_puts
 
 def display_options_data(ticker, volume_threshold):
@@ -34,16 +30,12 @@ def display_options_data(ticker, volume_threshold):
 
         st.subheader("High Volume Call Options")
         if not high_volume_calls.empty:
-            # Replace the contract symbol with "Call"
-            high_volume_calls['contractSymbol'] = 'Call'
             st.write(high_volume_calls)
         else:
             st.write("No high volume call options found.")
 
         st.subheader("High Volume Put Options")
         if not high_volume_puts.empty:
-            # Replace the contract symbol with "Put"
-            high_volume_puts['contractSymbol'] = 'Put'
             st.write(high_volume_puts)
         else:
             st.write("No high volume put options found.")
