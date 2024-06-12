@@ -431,10 +431,10 @@ if 'oi_threshold' not in st.session_state:
     st.session_state.oi_threshold = 1000
 
 # Slider for volume threshold
-VOLUME_THRESHOLD = st.slider("Volume Threshold", min_value=0, max_value=100000, value=st.session_state.volume_threshold, step=100)
+VOLUME_THRESHOLD = st.slider("Volume Threshold", min_value=0, max_value=10000, value=st.session_state.volume_threshold, step=100)
 
 # Slider for OI threshold
-OI_THRESHOLD = st.slider("OI Threshold", min_value=0, max_value=100000, value=st.session_state.oi_threshold, step=100)
+OI_THRESHOLD = st.slider("OI Threshold", min_value=0, max_value=10000, value=st.session_state.oi_threshold, step=100)
 
 # Update session state with the new volume and OI thresholds
 st.session_state.volume_threshold = VOLUME_THRESHOLD
