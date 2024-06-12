@@ -6,6 +6,9 @@ import ta
 from functools import lru_cache
 import options_data
 
+
+
+
 # Set page config
 st.set_page_config(page_title="Stock Charting and Technical Analysis App", layout="wide")
 
@@ -38,30 +41,34 @@ st.subheader("An advanced tool for technical analysis")
 ticker = st.text_input("Enter Stock Ticker", value="GME", max_chars=10)
 
 # Time frame selection
-time_frame = st.selectbox("Select Time Frame", ["1m", "2m", "5m", "15m", "30m", "60m", "90m", "1d", "5d", "1wk", "1mo", "3mo"])
-
-# Chart type selection
-chart_type = st.selectbox("Select Chart Type", ["Candlestick", "Line"])
+time_frame = st.selectbox("Select Time Frame", ["Intraday", "1 Day", "5 Day", "1 Month", "6 Months", "1 Year", "YTD", "5Y", "4 Hour"])
 
 # Mapping time frames to yfinance intervals
 time_frame_mapping = {
-    "1m": "1m",
-    "2m": "2m",
-    "5m": "5m",
-    "15m": "15m",
-    "30m": "30m",
-    "60m": "60m",
-    "90m": "90m",
-    "1d": "1d",
-    "5d": "5d",
-    "1wk": "1wk",
-    "1mo": "1mo",
-    "3mo": "3mo",
+    "Intraday": "5m",
+    "1 Day": "1d",
+    "5 Day": "1d",
+    "1 Month": "1d",
+    "6 Months": "1d",
+    "1 Year": "1d",
+    "YTD": "1d",
+    "5Y": "1d",
+}
+
+period_mapping = {
+    "Intraday": "1d",
+    "1 Day": "1d",
+    "5 Day": "5d",
+    "1 Month": "1mo",
+    "6 Months": "6mo",
+    "1 Year": "1y",
+    "YTD": "ytd",
+    "5Y": "5y",
 }
 
 # Initialize period and interval
 interval = time_frame_mapping[time_frame]
-period = time_frame
+period = period_mapping[time_frame]
 
 # Function to aggregate data
 def aggregate_data(data, interval):
@@ -150,7 +157,9 @@ if not data.empty:
             st.error("Insufficient data to calculate Parabolic SAR.")
             return pd.Series([None] * len(data))
         return ta.trend.PSARIndicator(data['High'], data['Low'], data['Close']).psar()
-    
+    def calculate_obv(data):
+        return ta.volume.OnBalanceVolumeIndicator(data['Close'], data['Volume']).on_balance_volume()
+
     data['SMA'] = calculate_sma(data, window=20)
     data['EMA'] = calculate_ema(data, window=20)
     data['RSI'] = calculate_rsi(data, window=14)
@@ -163,7 +172,7 @@ if not data.empty:
 
     # Add checkboxes for indicators
     st.sidebar.title("Technical Indicators")
-    selected_indicators = st.sidebar.multiselect("Select Indicators", ['SMA', 'EMA', 'RSI', 'MACD', 'Stochastic Oscillator', 'BBands', 'Ichimoku Cloud', 'Parabolic SAR', 'OBV'])
+    selected_indicators = st.sidebar.multiselect("Select Indicators", ['SMA', 'EMA', 'RSI', 'MACD','Stochastic Oscillator', 'BBands', 'Ichimoku Cloud', 'Parabolic SAR', 'OBV'])
 
     # Add volume checkbox
     show_volume = st.sidebar.checkbox("Show Volume")
@@ -187,12 +196,8 @@ if not data.empty:
     # Ensure the correct column name for datetime
     datetime_col = 'Datetime' if 'Datetime' in data.columns else 'Date'
 
-    if chart_type == "Candlestick":
-        # Candlestick chart
-        fig.add_trace(go.Candlestick(x=data[datetime_col], open=data['Open'], high=data['High'], low=data['Low'], close=data['Close'], name='Candlesticks'))
-    elif chart_type == "Line":
-        # Line chart
-        fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Close'], mode='lines', name='Close'))
+    # Candlestick chart
+    fig.add_trace(go.Candlestick(x=data[datetime_col], open=data['Open'], high=data['High'], low=data['Low'], close=data['Close'], name='Candlesticks'))
 
     # Add selected indicators
     if 'SMA' in selected_indicators:
@@ -286,6 +291,7 @@ if not data.empty:
             xaxis_rangeslider_visible=False,
         )
 
+
     # Render additional subplots
     if 'RSI' in selected_indicators:
         st.plotly_chart(rsi_fig, use_container_width=True)
@@ -301,6 +307,123 @@ if not data.empty:
 
     st.plotly_chart(fig, use_container_width=True, config=config)
 
+    # Define a threshold for high volume
+   # VOLUME_THRESHOLD = 1000
+
+    # Function to decode contract symbol
+    #def decode_contract_symbol(contract_symbol):
+     #   from datetime import datetime
+        # Extract the ticker symbol, expiration date, option type, and strike price from the contract symbol
+      #  ticker_symbol = contract_symbol[:-15]
+       # expiration_date = datetime.strptime(contract_symbol[-15:-9], '%y%m%d').date()
+        #option_type = 'Call' if contract_symbol[-9] == 'C' else 'Put'
+        #strike_price = int(contract_symbol[-8:]) / 1000
+
+        #return ticker_symbol, expiration_date, option_type, strike_price
+
+    #@st.cache_data
+    #def get_high_volume_options(ticker_symbol):
+        # Create a ticker object
+    #    ticker = yf.Ticker(ticker_symbol)
+
+        # Get all expiry dates
+     #   expiry_dates = ticker.options
+
+        # Initialize an empty DataFrame to store all high volume options
+      #  high_volume_options = pd.DataFrame()
+
+        # Loop through all expiry dates
+       # for expiry_date in expiry_dates:
+            # Get options data for this expiry date
+        #    options_data = ticker.option_chain(expiry_date)
+
+            # The returned data is a named tuple containing two dataframes: calls and puts
+         #   calls_data = options_data.calls
+          #  puts_data = options_data.puts
+
+            # Filter for high volume options
+           # high_volume_calls = calls_data[calls_data['volume'] > VOLUME_THRESHOLD].copy()
+            #high_volume_puts = puts_data[puts_data['volume'] > VOLUME_THRESHOLD].copy()
+
+            # Add option type column
+            #if not high_volume_calls.empty:
+             #   high_volume_calls.loc[:, 'Option Type'] = 'Call'
+            #if not high_volume_puts.empty:
+             #   high_volume_puts.loc[:, 'Option Type'] = 'Put'
+
+            # Concatenate calls and puts data
+           # high_volume_options_date = pd.concat([high_volume_calls, high_volume_puts])
+
+            # Append to the overall DataFrame
+            #high_volume_options = pd.concat([high_volume_options, high_volume_options_date])
+
+        # Decode contract symbols
+        #high_volume_options[['Ticker Symbol', 'Expiration Date', 'Option Type', 'Strike Price']] = high_volume_options.apply(lambda row: decode_contract_symbol(row['contractSymbol']), axis=1, result_type='expand')
+
+       # Reorder and rename columns to match the screenshot
+        #high_volume_options = high_volume_options[['Ticker Symbol', 'contractSymbol', 'Expiration Date', 'lastTradeDate', 'Strike Price', 'lastPrice', 'bid', 'ask', 'change', 'percentChange', 'volume', 'openInterest', 'impliedVolatility', 'inTheMoney', 'Option Type']]
+        #high_volume_options.columns = ['Ticker', 'Contract', 'DTE', 'Last Trade Date', 'Strike', 'Last', 'Bid', 'Ask', 'Change', 'Percent Change', 'Volume', 'Open Interest', 'IV', 'ITM', 'Type']
+
+        #return high_volume_options
+
+    # Fetch high volume options
+    #high_volume_options = get_high_volume_options(ticker)
+
+    # Create tables for top calls and puts
+    #top_calls = high_volume_options[high_volume_options['Type'] == 'Call'].nlargest(10, 'Volume')
+    #top_puts = high_volume_options[high_volume_options['Type'] == 'Put'].nlargest(10, 'Volume')
+
+    # Display the tables
+    #st.subheader("Top 10 Most Active Calls")
+    #st.write(top_calls)
+
+    #st.subheader("Top 10 Most Active Puts")
+    #st.write(top_puts)
+
+    # Calculate key volume support
+    #def calculate_key_volume_support(data):
+    #    volume_price = data[['Close', 'Volume']].copy()
+     #   volume_price['Volume x Close'] = volume_price['Close'] * volume_price['Volume']
+
+        # Group by price levels and calculate the volume x close
+      #  volume_support_levels = volume_price.groupby('Close')['Volume x Close'].sum()
+
+        # Find the price level with the highest volume x close (strongest support)
+       # highest_volume_support_level = volume_support_levels.idxmax()
+
+        # Find the price level with the lowest volume x close (weakest support)
+        #lowest_volume_support_level = volume_support_levels.idxmin()
+
+        #return highest_volume_support_level, lowest_volume_support_level
+
+    ## Identify support and resistance levels
+    #def identify_support_resistance(data):
+     #   pivots = []
+      #  max_list = []
+       # min_list = []
+        #for i in range(1, len(data)-1):
+         #   if data['Low'][i] < data['Low'][i-1] and data['Low'][i] < data['Low'][i+1]:
+          #      pivots.append((data[datetime_col][i], data['Low'][i]))
+           #     min_list.append((data[datetime_col][i], data['Low'][i]))
+           # if data['High'][i] > data['High'][i-1] and data['High'][i] > data['High'][i+1]:
+            #    pivots.append((data[datetime_col][i], data['High'][i]))
+             #   max_list.append((data[datetime_col][i], data['High'][i]))
+
+#        return pivots, max_list, min_list
+
+    # Calculate and display key volume support
+ #   highest_volume_support, lowest_volume_support = calculate_key_volume_support(data)
+  #  st.write(f"Key Volume Support Level: Highest - {highest_volume_support}, Lowest - {lowest_volume_support}")
+
+    # Calculate and display support and resistance levels
+   # pivots, max_list, min_list = identify_support_resistance(data)
+    #st.write("Support and Resistance Levels:")
+    #st.write("Pivots:", pivots)
+    #st.write("Max Levels:", max_list)
+   # st.write("Min Levels:", min_list)
+
+#else:
+ #   st.error("Failed to load data. Please check the ticker symbol and date range.")"""
 # Store the initial volume and OI thresholds in the session state
 if 'volume_threshold' not in st.session_state:
     st.session_state.volume_threshold = 5000
@@ -322,5 +445,6 @@ if st.button("Options Data") or 'options_data_shown' in st.session_state:
     st.subheader("Options Data")
     options_data.display_options_data(ticker, VOLUME_THRESHOLD, OI_THRESHOLD)
     st.session_state.options_data_shown = True
+
 else:
     st.error("No data found for the given ticker and time frame.")
