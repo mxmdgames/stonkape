@@ -4,13 +4,10 @@ import pandas as pd
 import plotly.graph_objects as go
 import ta
 from functools import lru_cache
+from scipy.stats import norm
+import numpy as np
+import time
 import options_data
-
-
-
-
-
-
 # Set page config
 st.set_page_config(page_title="Stock Charting and Technical Analysis App", layout="wide")
 
@@ -43,7 +40,7 @@ st.subheader("An advanced tool for technical analysis")
 ticker = st.text_input("Enter Stock Ticker", value="GME", max_chars=10)
 
 # Time frame selection
-time_frame = st.selectbox("Select Time Frame", ["Intraday", "1 Day", "5 Day", "1 Month", "6 Months", "1 Year", "YTD", "5Y", "4 Hour"])
+time_frame = st.selectbox("Select Time Frame", ["Intraday", "1 Day", "5 Day", "1 Month", "6 Months", "1 Year", "YTD", "5Y"])
 
 # Mapping time frames to yfinance intervals
 time_frame_mapping = {
@@ -159,15 +156,6 @@ if not data.empty:
             st.error("Insufficient data to calculate Parabolic SAR.")
             return pd.Series([None] * len(data))
         return ta.trend.PSARIndicator(data['High'], data['Low'], data['Close']).psar()
-    def calculate_obv(data):
-        return ta.volume.OnBalanceVolumeIndicator(data['Close'], data['Volume']).on_balance_volume()
-    def calculate_options_flow(data):
-        # Get options chain
-        options_chain = yf.Ticker(ticker).option_chain(data['Date'].iloc[-1].date())
-
-
-
-    
 
     data['SMA'] = calculate_sma(data, window=20)
     data['EMA'] = calculate_ema(data, window=20)
@@ -179,11 +167,9 @@ if not data.empty:
     data['Parabolic_SAR'] = calculate_parabolic_sar(data)
     data['OBV'] = calculate_obv(data)
 
-
-    
     # Add checkboxes for indicators
     st.sidebar.title("Technical Indicators")
-    selected_indicators = st.sidebar.multiselect("Select Indicators", ['SMA', 'EMA', 'RSI', 'MACD','Stochastic Oscillator', 'BBands', 'Ichimoku Cloud', 'Parabolic SAR', 'OBV'])
+    selected_indicators = st.sidebar.multiselect("Select Indicators", ['SMA', 'EMA', 'RSI', 'MACD', 'Stochastic Oscillator', 'BBands', 'Ichimoku Cloud', 'Parabolic SAR', 'OBV'])
 
     # Add volume checkbox
     show_volume = st.sidebar.checkbox("Show Volume")
@@ -225,7 +211,7 @@ if not data.empty:
         fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Ichimoku_Conv'], mode='lines', name='Ichimoku Conversion Line', line=dict(color='grey')))
     if 'Parabolic SAR' in selected_indicators:
         fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Parabolic_SAR'], mode='markers', name='Parabolic SAR', marker=dict(color='green', symbol='circle', size=5)))
-    
+
     # Add Fibonacci retracement levels
     for level in fibonacci_levels:
         fig.add_trace(go.Scatter(x=[data[datetime_col].iloc[0], data[datetime_col].iloc[-1]], y=[level, level], mode='lines', name=f'Fibonacci Level {level:.2f}', line=dict(dash='dash')))
@@ -247,7 +233,7 @@ if not data.empty:
             showgrid=False,
         ),
         xaxis_rangeslider_visible=False,
-        dragmode='drawline' if draw_trend_line else 'zoom'  # Enable line drawing mode if trend line drawing is enabled
+        dragmode='drawline' if draw_trend_line else 'zoom'
     )
 
     # Plot additional technical indicators in separate subplots
@@ -302,7 +288,6 @@ if not data.empty:
             xaxis_rangeslider_visible=False,
         )
 
-
     # Render additional subplots
     if 'RSI' in selected_indicators:
         st.plotly_chart(rsi_fig, use_container_width=True)
@@ -318,123 +303,66 @@ if not data.empty:
 
     st.plotly_chart(fig, use_container_width=True, config=config)
 
-    # Define a threshold for high volume
-   # VOLUME_THRESHOLD = 1000
+    # Live Stock Price Tracker
+    st.title("Live Stock Price Tracker")
+    live_price_placeholder = st.empty()
 
-    # Function to decode contract symbol
-    #def decode_contract_symbol(contract_symbol):
-     #   from datetime import datetime
-        # Extract the ticker symbol, expiration date, option type, and strike price from the contract symbol
-      #  ticker_symbol = contract_symbol[:-15]
-       # expiration_date = datetime.strptime(contract_symbol[-15:-9], '%y%m%d').date()
-        #option_type = 'Call' if contract_symbol[-9] == 'C' else 'Put'
-        #strike_price = int(contract_symbol[-8:]) / 1000
+    def get_live_price(ticker):
+        ticker_data = yf.Ticker(ticker)
+        todays_data = ticker_data.history(period='1d')
+        return todays_data['Close'][0]
 
-        #return ticker_symbol, expiration_date, option_type, strike_price
+    while True:
+        live_price = get_live_price(ticker)
+        live_price_placeholder.metric(label=f"Live {ticker} Price", value=live_price)
+        time.sleep(60)
 
-    #@st.cache_data
-    #def get_high_volume_options(ticker_symbol):
-        # Create a ticker object
-    #    ticker = yf.Ticker(ticker_symbol)
+    # Options Greeks Calculation
+    def calculate_greeks(option_type, S, K, T, r, sigma):
+        d1 = (np.log(S / K) + (r + 0.5 * sigma ** 2) * T) / (sigma * np.sqrt(T))
+        d2 = d1 - sigma * np.sqrt(T)
+        if option_type == 'call':
+            delta = norm.cdf(d1)
+            gamma = norm.pdf(d1) / (S * sigma * np.sqrt(T))
+            theta = - (S * norm.pdf(d1) * sigma) / (2 * np.sqrt(T)) - r * K * np.exp(-r * T) * norm.cdf(d2)
+            vega = S * norm.pdf(d1) * np.sqrt(T)
+        else:
+            delta = -norm.cdf(-d1)
+            gamma = norm.pdf(d1) / (S * sigma * np.sqrt(T))
+            theta = - (S * norm.pdf(d1) * sigma) / (2 * np.sqrt(T)) + r * K * np.exp(-r * T) * norm.cdf(-d2)
+            vega = S * norm.pdf(d1) * np.sqrt(T)
+        return delta, gamma, theta, vega
 
-        # Get all expiry dates
-     #   expiry_dates = ticker.options
+    st.title("Options Greeks Analysis")
 
-        # Initialize an empty DataFrame to store all high volume options
-      #  high_volume_options = pd.DataFrame()
+    option_type = st.selectbox("Select Option Type", ["call", "put"])
+    strike_price = st.number_input("Enter Strike Price", min_value=0.0)
+    expiration_date = st.date_input("Select Expiration Date")
+    current_price = get_live_price(ticker)
+    volatility = st.number_input("Enter Volatility", min_value=0.0)
+    risk_free_rate = st.number_input("Enter Risk-Free Rate", min_value=0.0)
 
-        # Loop through all expiry dates
-       # for expiry_date in expiry_dates:
-            # Get options data for this expiry date
-        #    options_data = ticker.option_chain(expiry_date)
+    days_to_expiration = (expiration_date - pd.Timestamp.today()).days / 365.0
 
-            # The returned data is a named tuple containing two dataframes: calls and puts
-         #   calls_data = options_data.calls
-          #  puts_data = options_data.puts
+    if st.button("Calculate Greeks"):
+        delta, gamma, theta, vega = calculate_greeks(option_type, current_price, strike_price, days_to_expiration, risk_free_rate, volatility)
+        st.write(f"Delta: {delta}")
+        st.write(f"Gamma: {gamma}")
+        st.write(f"Theta: {theta}")
+        st.write(f"Vega: {vega}")
 
-            # Filter for high volume options
-           # high_volume_calls = calls_data[calls_data['volume'] > VOLUME_THRESHOLD].copy()
-            #high_volume_puts = puts_data[puts_data['volume'] > VOLUME_THRESHOLD].copy()
+        # Plot Greeks
+        greeks_fig = go.Figure()
+        greeks_fig.add_trace(go.Scatter(x=[strike_price], y=[delta], mode='markers+lines', name='Delta'))
+        greeks_fig.add_trace(go.Scatter(x=[strike_price], y=[gamma], mode='markers+lines', name='Gamma'))
+        greeks_fig.add_trace(go.Scatter(x=[strike_price], y=[theta], mode='markers+lines', name='Theta'))
+        greeks_fig.add_trace(go.Scatter(x=[strike_price], y=[vega], mode='markers+lines', name='Vega'))
+        greeks_fig.update_layout(title="Options Greeks", xaxis_title="Strike Price", yaxis_title="Greek Value", template='plotly_dark')
+        st.plotly_chart(greeks_fig, use_container_width=True)
 
-            # Add option type column
-            #if not high_volume_calls.empty:
-             #   high_volume_calls.loc[:, 'Option Type'] = 'Call'
-            #if not high_volume_puts.empty:
-             #   high_volume_puts.loc[:, 'Option Type'] = 'Put'
+else:
+    st.error("Failed to load data. Please check the ticker symbol and date range.")
 
-            # Concatenate calls and puts data
-           # high_volume_options_date = pd.concat([high_volume_calls, high_volume_puts])
-
-            # Append to the overall DataFrame
-            #high_volume_options = pd.concat([high_volume_options, high_volume_options_date])
-
-        # Decode contract symbols
-        #high_volume_options[['Ticker Symbol', 'Expiration Date', 'Option Type', 'Strike Price']] = high_volume_options.apply(lambda row: decode_contract_symbol(row['contractSymbol']), axis=1, result_type='expand')
-
-       # Reorder and rename columns to match the screenshot
-        #high_volume_options = high_volume_options[['Ticker Symbol', 'contractSymbol', 'Expiration Date', 'lastTradeDate', 'Strike Price', 'lastPrice', 'bid', 'ask', 'change', 'percentChange', 'volume', 'openInterest', 'impliedVolatility', 'inTheMoney', 'Option Type']]
-        #high_volume_options.columns = ['Ticker', 'Contract', 'DTE', 'Last Trade Date', 'Strike', 'Last', 'Bid', 'Ask', 'Change', 'Percent Change', 'Volume', 'Open Interest', 'IV', 'ITM', 'Type']
-
-        #return high_volume_options
-
-    # Fetch high volume options
-    #high_volume_options = get_high_volume_options(ticker)
-
-    # Create tables for top calls and puts
-    #top_calls = high_volume_options[high_volume_options['Type'] == 'Call'].nlargest(10, 'Volume')
-    #top_puts = high_volume_options[high_volume_options['Type'] == 'Put'].nlargest(10, 'Volume')
-
-    # Display the tables
-    #st.subheader("Top 10 Most Active Calls")
-    #st.write(top_calls)
-
-    #st.subheader("Top 10 Most Active Puts")
-    #st.write(top_puts)
-
-    # Calculate key volume support
-    #def calculate_key_volume_support(data):
-    #    volume_price = data[['Close', 'Volume']].copy()
-     #   volume_price['Volume x Close'] = volume_price['Close'] * volume_price['Volume']
-
-        # Group by price levels and calculate the volume x close
-      #  volume_support_levels = volume_price.groupby('Close')['Volume x Close'].sum()
-
-        # Find the price level with the highest volume x close (strongest support)
-       # highest_volume_support_level = volume_support_levels.idxmax()
-
-        # Find the price level with the lowest volume x close (weakest support)
-        #lowest_volume_support_level = volume_support_levels.idxmin()
-
-        #return highest_volume_support_level, lowest_volume_support_level
-
-    ## Identify support and resistance levels
-    #def identify_support_resistance(data):
-     #   pivots = []
-      #  max_list = []
-       # min_list = []
-        #for i in range(1, len(data)-1):
-         #   if data['Low'][i] < data['Low'][i-1] and data['Low'][i] < data['Low'][i+1]:
-          #      pivots.append((data[datetime_col][i], data['Low'][i]))
-           #     min_list.append((data[datetime_col][i], data['Low'][i]))
-           # if data['High'][i] > data['High'][i-1] and data['High'][i] > data['High'][i+1]:
-            #    pivots.append((data[datetime_col][i], data['High'][i]))
-             #   max_list.append((data[datetime_col][i], data['High'][i]))
-
-#        return pivots, max_list, min_list
-
-    # Calculate and display key volume support
- #   highest_volume_support, lowest_volume_support = calculate_key_volume_support(data)
-  #  st.write(f"Key Volume Support Level: Highest - {highest_volume_support}, Lowest - {lowest_volume_support}")
-
-    # Calculate and display support and resistance levels
-   # pivots, max_list, min_list = identify_support_resistance(data)
-    #st.write("Support and Resistance Levels:")
-    #st.write("Pivots:", pivots)
-    #st.write("Max Levels:", max_list)
-   # st.write("Min Levels:", min_list)
-
-#else:
- #   st.error("Failed to load data. Please check the ticker symbol and date range.")"""
 # Store the initial volume and OI thresholds in the session state
 if 'volume_threshold' not in st.session_state:
     st.session_state.volume_threshold = 5000
@@ -456,9 +384,5 @@ if st.button("Options Data") or 'options_data_shown' in st.session_state:
     st.subheader("Options Data")
     options_data.display_options_data(ticker, VOLUME_THRESHOLD, OI_THRESHOLD)
     st.session_state.options_data_shown = True
-
 else:
     st.error("No data found for the given ticker and time frame.")
-st.title("Live Stock Price Tracker")
-
-
