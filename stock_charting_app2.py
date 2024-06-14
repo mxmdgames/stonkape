@@ -155,6 +155,30 @@ if not data.empty:
             st.error("Insufficient data to calculate Parabolic SAR.")
             return pd.Series([None] * len(data))
         return ta.trend.PSARIndicator(data['High'], data['Low'], data['Close']).psar()
+    # Calculate Stochastic Oscillator
+    def calculate_stochastic_oscillator(data):
+        so = ta.momentum.StochasticOscillator(data['High'], data['Low'], data['Close'])
+        return so.stoch(), so.stoch_signal()
+
+    # Calculate the Stochastic Oscillator
+    data['Stoch'], data['Stoch_Signal'] = calculate_stochastic_oscillator(data)
+
+    # Stochastic Oscillator subplot
+    stoch_fig = go.Figure()
+    if 'Stoch' in selected_indicators:
+        stoch_fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Stoch'], mode='lines', name='Stochastic Oscillator', line=dict(color='blue')))
+        stoch_fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Stoch_Signal'], mode='lines', name='Stochastic Signal', line=dict(color='red')))
+        stoch_fig.update_layout(
+            title="Stochastic Oscillator",
+            yaxis_title='Stochastic Oscillator',
+            xaxis_title='Date',
+            template='plotly_dark',
+            xaxis_rangeslider_visible=False,
+        )
+
+    # Render the Stochastic Oscillator subplot
+    if 'Stochastic Oscillator' in selected_indicators:
+        st.plotly_chart(stoch_fig, use_container_width=True)
 
     data['SMA'] = calculate_sma(data, window=20)
     data['EMA'] = calculate_ema(data, window=20)
