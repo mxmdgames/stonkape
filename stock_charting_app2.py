@@ -91,7 +91,7 @@ def aggregate_data(data, interval):
 # Function to load data without caching
 @lru_cache(maxsize=None)
 def load_data_uncached(ticker, period, interval):
-    data = yf.download(ticker, period=period, interval=interval)
+    data = yf.download(ticker, period=period, interval=interval, progress=False)  # Disable progress bar
     if data.empty:
         st.error("No data found for the given ticker and time frame.")
         return data
@@ -99,6 +99,7 @@ def load_data_uncached(ticker, period, interval):
         data = aggregate_data(data, interval)
     data.reset_index(inplace=True)
     return data
+
 
 # Fetching stock data
 def load_data(ticker, period, interval):
