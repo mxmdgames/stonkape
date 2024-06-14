@@ -165,11 +165,9 @@ if not data.empty:
         # Get options chain
         options_chain = yf.Ticker(ticker).option_chain(data['Date'].iloc[-1].date())
 
-        # Calculate net premium for calls and puts
-        net_call_premium = (options_chain.calls['lastPrice'] * options_chain.calls['volume']).sum()
-        net_put_premium = (options_chain.puts['lastPrice'] * options_chain.puts['volume']).sum()
 
-        return net_call_premium, net_put_premium
+
+    
 
     data['SMA'] = calculate_sma(data, window=20)
     data['EMA'] = calculate_ema(data, window=20)
@@ -181,7 +179,7 @@ if not data.empty:
     data['Parabolic_SAR'] = calculate_parabolic_sar(data)
     data['OBV'] = calculate_obv(data)
 
-    net_call_premium, net_put_premium = calculate_options_flow(data)
+
     
     # Add checkboxes for indicators
     st.sidebar.title("Technical Indicators")
@@ -235,10 +233,6 @@ if not data.empty:
     # Volume
     if show_volume:
         fig.add_trace(go.Bar(x=data[datetime_col], y=data['Volume'], name='Volume', marker=dict(color='gray'), yaxis='y2'))
-      # Options flow chart
-    options_flow_fig = go.Figure()
-    options_flow_fig.add_trace(go.Bar(x=['Net Call Premium', 'Net Put Premium'], y=[net_call_premium, net_put_premium], name='Options Flow', marker=dict(color=['green', 'red'])))
-    options_flow_fig.update_layout(title="Options Flow: Net Call Premium vs Net Put Premium", xaxis_title="Flow Type", yaxis_title="Premium")
 
     # Layout settings
     fig.update_layout(
