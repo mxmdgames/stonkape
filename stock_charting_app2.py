@@ -5,7 +5,7 @@ import plotly.graph_objects as go
 import ta
 from functools import lru_cache
 import options_data
-from live_stock_tracker import track_live_prices
+
 
 
 
