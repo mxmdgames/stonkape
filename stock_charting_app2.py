@@ -7,15 +7,7 @@ from functools import lru_cache
 import options_data
 from live_stock_tracker import track_live_prices
 
-st.title("Live Stock Price Tracker")
-ticker = st.text_input("Enter the stock ticker symbol (e.g., AAPL, MSFT):", "GME")
 
-if ticker:
-    st.success(f"Tracking {ticker} live prices...")
-    track_button = st.button("Start Live Tracking")
-
-    if track_button:
-        track_live_prices(ticker)
 
 
 
@@ -49,7 +41,11 @@ st.subheader("An advanced tool for technical analysis")
 
 # User input for stock ticker and time frame
 ticker = st.text_input("Enter Stock Ticker", value="GME", max_chars=10)
+st.title("Live Stock Price Tracker")
 
+
+    if track_button:
+        track_live_prices(ticker)
 # Time frame selection
 time_frame = st.selectbox("Select Time Frame", ["Intraday", "1 Day", "5 Day", "1 Month", "6 Months", "1 Year", "YTD", "5Y", "4 Hour"])
 
