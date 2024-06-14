@@ -5,7 +5,17 @@ import plotly.graph_objects as go
 import ta
 from functools import lru_cache
 import options_data
+from live_stock_tracker import track_live_prices
 
+st.title("Live Stock Price Tracker")
+ticker = st.text_input("Enter the stock ticker symbol (e.g., AAPL, MSFT):", "GME")
+
+if ticker:
+    st.success(f"Tracking {ticker} live prices...")
+    track_button = st.button("Start Live Tracking")
+
+    if track_button:
+        track_live_prices(ticker)
 
 
 
