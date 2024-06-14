@@ -91,7 +91,7 @@ def aggregate_data(data, interval):
 # Function to load data without caching
 @lru_cache(maxsize=None)
 def load_data_uncached(ticker, period, interval):
-    data = yf.download(ticker, period=period, interval=interval)
+    data = yf.download(ticker, period=period, interval=interval, progress=False)
     if data.empty:
         st.error("No data found for the given ticker and time frame.")
         return data
@@ -203,9 +203,9 @@ if not data.empty:
         fig.add_trace(go.Scatter(x=data[datetime_col], y=data['BB_High'], mode='lines', name='BB High', line=dict(color='red')))
         fig.add_trace(go.Scatter(x=data[datetime_col], y=data['BB_Low'], mode='lines', name='BB Low', line=dict(color='red')))
     if 'Ichimoku Cloud' in selected_indicators:
-        fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Ichimoku_A'], mode='lines', name='Ichimoku A', line=dict(color='pink')))
+        fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Ichimoku_A'], mode='lines', name='Ichimoku A', line=dict(color='green')))
         fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Ichimoku_B'], mode='lines', name='Ichimoku B', line=dict(color='brown')))
-        fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Ichimoku_Base'], mode='lines', name='Ichimoku Base Line', line=dict(color='yellow')))
+        fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Ichimoku_Base'], mode='lines', name='Ichimoku Base Line', line=dict(color='blue')))
         fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Ichimoku_Conv'], mode='lines', name='Ichimoku Conversion Line', line=dict(color='green')))
     if 'Parabolic SAR' in selected_indicators:
         fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Parabolic_SAR'], mode='markers', name='Parabolic SAR', marker=dict(color='blue', symbol='circle')))
