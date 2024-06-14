@@ -106,18 +106,19 @@ def load_data_uncached(ticker, period, interval):
     return data
 
 # Fetching stock data
-def load_data(ticker, period, interval):
-    return load_data_uncached(ticker, period, interval)
-
-def refresh_data(ticker, period, interval):
-    data = load_data_uncached(ticker, period, interval)
-    return data
-
-# Refresh button
-if st.button("Refresh Data"):
-    data = refresh_data(ticker, period, interval)
-else:
-    data = load_data(ticker, period, interval)
+def load_data_uncached(ticker, period, interval):
+    try:
+        data = yf.download(ticker, period=period, interval=interval)
+        if data.empty:
+            st.error("No data found for the given ticker and time frame.")
+            return data
+        if interval in ["1h", "4h"]:
+            data = aggregate_data(data, interval)
+        data.reset_index(inplace=True)
+        return data
+    except Exception as e:
+        st.error(f"Error occurred while fetching data: {e}")
+        return pd.DataFrame()
 
 # Check if data is loaded before proceeding
 if not data.empty:
