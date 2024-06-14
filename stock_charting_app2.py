@@ -161,13 +161,6 @@ if not data.empty:
         return ta.trend.PSARIndicator(data['High'], data['Low'], data['Close']).psar()
     def calculate_obv(data):
         return ta.volume.OnBalanceVolumeIndicator(data['Close'], data['Volume']).on_balance_volume()
-    def calculate_options_flow(data):
-        # Get options chain
-        options_chain = yf.Ticker(ticker).option_chain(data['Date'].iloc[-1].date())
-
-
-
-    
 
     data['SMA'] = calculate_sma(data, window=20)
     data['EMA'] = calculate_ema(data, window=20)
@@ -179,8 +172,6 @@ if not data.empty:
     data['Parabolic_SAR'] = calculate_parabolic_sar(data)
     data['OBV'] = calculate_obv(data)
 
-
-    
     # Add checkboxes for indicators
     st.sidebar.title("Technical Indicators")
     selected_indicators = st.sidebar.multiselect("Select Indicators", ['SMA', 'EMA', 'RSI', 'MACD','Stochastic Oscillator', 'BBands', 'Ichimoku Cloud', 'Parabolic SAR', 'OBV'])
@@ -225,7 +216,7 @@ if not data.empty:
         fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Ichimoku_Conv'], mode='lines', name='Ichimoku Conversion Line', line=dict(color='grey')))
     if 'Parabolic SAR' in selected_indicators:
         fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Parabolic_SAR'], mode='markers', name='Parabolic SAR', marker=dict(color='green', symbol='circle', size=5)))
-    
+
     # Add Fibonacci retracement levels
     for level in fibonacci_levels:
         fig.add_trace(go.Scatter(x=[data[datetime_col].iloc[0], data[datetime_col].iloc[-1]], y=[level, level], mode='lines', name=f'Fibonacci Level {level:.2f}', line=dict(dash='dash')))
@@ -460,4 +451,3 @@ if st.button("Options Data") or 'options_data_shown' in st.session_state:
 else:
     st.error("No data found for the given ticker and time frame.")
 st.title("Live Stock Price Tracker")
-
