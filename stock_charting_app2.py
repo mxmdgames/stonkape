@@ -453,5 +453,3 @@ else:
 st.title("Live Stock Price Tracker")
 
 
-if track_button:
-    track_live_prices(ticker)
