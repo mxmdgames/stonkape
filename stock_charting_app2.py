@@ -95,11 +95,12 @@ def load_data_uncached(ticker, period, interval):
     if data.empty:
         st.error("No data found for the given ticker and time frame.")
         return data
+    if data.index.tzinfo is not None:
+        data.index = data.index.tz_localize(None)
     if interval in ["1h", "4h"]:
         data = aggregate_data(data, interval)
     data.reset_index(inplace=True)
     return data
-
 
 # Fetching stock data
 def load_data(ticker, period, interval):
@@ -214,7 +215,7 @@ if not data.empty:
     # Plotting the data
     fig = go.Figure()
 
-    # Ensure the correct column name for datetime
+    # Determine the correct datetime column
     datetime_column = 'Datetime' if 'Datetime' in data.columns else 'Date'
 
     # Add main plot
