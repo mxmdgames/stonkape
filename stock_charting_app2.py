@@ -95,12 +95,11 @@ def load_data_uncached(ticker, period, interval):
     if data.empty:
         st.error("No data found for the given ticker and time frame.")
         return data
-    if data.index.tzinfo is not None:
-        data.index = data.index.tz_localize(None)
     if interval in ["1h", "4h"]:
         data = aggregate_data(data, interval)
     data.reset_index(inplace=True)
     return data
+
 
 # Fetching stock data
 def load_data(ticker, period, interval):
@@ -187,94 +186,262 @@ if not data.empty:
 
     fibonacci_levels = calculate_fibonacci_retracement(data)
 
-    # Calculate Fear and Greed Index
-    def calculate_fear_greed_index(data):
-        fear_greed_index = pd.Series(index=data.index, dtype=float)
-        
-        # Normalize RSI to a 0-1 scale (0 = Fear, 1 = Greed)
-        rsi_normalized = data['RSI'] / 100
-        
-        # Use the distance of the current close price from the SMA as a greed factor
-        sma_distance = data['Close'] / data['SMA'] - 1
-        sma_normalized = (sma_distance - sma_distance.min()) / (sma_distance.max() - sma_distance.min())
-        
-        # Use volume as a proxy for market sentiment (higher volume can indicate higher greed)
-        volume_normalized = (data['Volume'] - data['Volume'].min()) / (data['Volume'].max() - data['Volume'].min())
-        
-        # Combine the factors to create the index
-        fear_greed_index = (rsi_normalized + sma_normalized + volume_normalized) / 3
-        
-        return fear_greed_index
-
-    data['FearGreedIndex'] = calculate_fear_greed_index(data)
-    
-    # Display Fear and Greed Index
-    st.subheader("Fear and Greed Index")
-    st.line_chart(data['FearGreedIndex'])
-    
     # Plotting the data
     fig = go.Figure()
 
-    # Determine the correct datetime column
-    datetime_column = 'Datetime' if 'Datetime' in data.columns else 'Date'
+    # Ensure the correct column name for datetime
+    datetime_col = 'Datetime' if 'Datetime' in data.columns else 'Date'
 
-    # Add main plot
-    fig.add_trace(go.Candlestick(
-        x=data[datetime_column],
-        open=data['Open'],
-        high=data['High'],
-        low=data['Low'],
-        close=data['Close'],
-        name='Candlestick'
-    ))
+    # Candlestick chart
+    fig.add_trace(go.Candlestick(x=data[datetime_col], open=data['Open'], high=data['High'], low=data['Low'], close=data['Close'], name='Candlesticks'))
 
-    # Add volume bars
-    if show_volume:
-        fig.add_trace(go.Bar(x=data[datetime_column], y=data['Volume'], name='Volume', yaxis='y2', marker=dict(color='lightgray', opacity=0.5)))
-
-    # Add selected indicators to the plot
+    # Add selected indicators
     if 'SMA' in selected_indicators:
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['SMA'], mode='lines', name='SMA'))
+        fig.add_trace(go.Scatter(x=data[datetime_col], y=data['SMA'], mode='lines', name='SMA', line=dict(color='orange')))
     if 'EMA' in selected_indicators:
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['EMA'], mode='lines', name='EMA'))
-    if 'RSI' in selected_indicators:
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['RSI'], mode='lines', name='RSI', yaxis='y3'))
-    if 'MACD' in selected_indicators:
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['MACD'], mode='lines', name='MACD'))
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['MACD_Signal'], mode='lines', name='MACD Signal'))
-        fig.add_trace(go.Bar(x=data[datetime_column], y=data['MACD_Hist'], name='MACD Hist', yaxis='y4'))
+        fig.add_trace(go.Scatter(x=data[datetime_col], y=data['EMA'], mode='lines', name='EMA', line=dict(color='purple')))
     if 'BBands' in selected_indicators:
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['BB_High'], mode='lines', name='BB High'))
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['BB_Low'], mode='lines', name='BB Low'))
+        fig.add_trace(go.Scatter(x=data[datetime_col], y=data['BB_High'], mode='lines', name='BB High', line=dict(color='red')))
+        fig.add_trace(go.Scatter(x=data[datetime_col], y=data['BB_Low'], mode='lines', name='BB Low', line=dict(color='red')))
     if 'Ichimoku Cloud' in selected_indicators:
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['Ichimoku_A'], mode='lines', name='Ichimoku A'))
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['Ichimoku_B'], mode='lines', name='Ichimoku B'))
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['Ichimoku_Base'], mode='lines', name='Ichimoku Base'))
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['Ichimoku_Conv'], mode='lines', name='Ichimoku Conv'))
+        fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Ichimoku_A'], mode='lines', name='Ichimoku A', line=dict(color='pink')))
+        fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Ichimoku_B'], mode='lines',        name='Ichimoku B', line=dict(color='brown')))
+        fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Ichimoku_Base'], mode='lines', name='Ichimoku Base Line', line=dict(color='yellow')))
+        fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Ichimoku_Conv'], mode='lines', name='Ichimoku Conversion Line', line=dict(color='grey')))
     if 'Parabolic SAR' in selected_indicators:
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['Parabolic_SAR'], mode='markers', name='Parabolic SAR', marker=dict(size=2)))
-    if 'OBV' in selected_indicators:
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['OBV'], mode='lines', name='OBV', yaxis='y5'))
+        fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Parabolic_SAR'], mode='markers', name='Parabolic SAR', marker=dict(color='green', symbol='circle', size=5)))
 
     # Add Fibonacci retracement levels
     for level in fibonacci_levels:
-        fig.add_trace(go.Scatter(x=[data[datetime_column].iloc[0], data[datetime_column].iloc[-1]], y=[level, level], mode='lines', line=dict(dash='dash', color='purple'), name=f'Fib Level {level:.2f}'))
+        fig.add_trace(go.Scatter(x=[data[datetime_col].iloc[0], data[datetime_col].iloc[-1]], y=[level, level], mode='lines', name=f'Fibonacci Level {level:.2f}', line=dict(dash='dash')))
 
-    # Trend line drawing
-    if draw_trend_line:
-        st.info("Click on the chart to start and end the trend line.")
-        trend_line = st.plotly_chart(fig, use_container_width=True, config=dict(editable=True))
-    else:
-        st.plotly_chart(fig, use_container_width=True)
+    # Volume
+    if show_volume:
+        fig.add_trace(go.Bar(x=data[datetime_col], y=data['Volume'], name='Volume', marker=dict(color='gray'), yaxis='y2'))
 
-    # Calculate option Greeks and IV
-    st.subheader("Options Greeks and Implied Volatility")
-    expiry_dates = options_data.get_expiry_dates(ticker)
-    selected_expiry = st.selectbox("Select Expiry Date", expiry_dates)
+    # Layout settings
+    fig.update_layout(
+        title=f"Stock Data and Technical Indicators for {ticker}",
+        yaxis_title='Stock Price',
+        xaxis_title='Date',
+        template='plotly_dark',
+        yaxis2=dict(
+            title='Volume',
+            overlaying='y',
+            side='right',
+            showgrid=False,
+        ),
+        xaxis_rangeslider_visible=False,
+        dragmode='drawline' if draw_trend_line else 'zoom'  # Enable line drawing mode if trend line drawing is enabled
+    )
 
-    # Fetch and display options data
-    options_df = options_data.get_options_data(ticker, selected_expiry)
-    st.write(options_df)
+    # Plot additional technical indicators in separate subplots
+    # RSI subplot
+    rsi_fig = go.Figure()
+    if 'RSI' in selected_indicators:
+        rsi_fig.add_trace(go.Scatter(x=data[datetime_col], y=data['RSI'], mode='lines', name='RSI', line=dict(color='blue')))
+        rsi_fig.update_layout(
+            title="Relative Strength Index (RSI)",
+            yaxis_title='RSI',
+            xaxis_title='Date',
+            template='plotly_dark',
+            xaxis_rangeslider_visible=False,
+        )
+
+    # MACD subplot
+    macd_fig = go.Figure()
+    if 'MACD' in selected_indicators:
+        macd_fig.add_trace(go.Scatter(x=data[datetime_col], y=data['MACD'], mode='lines', name='MACD', line=dict(color='blue')))
+        macd_fig.add_trace(go.Scatter(x=data[datetime_col], y=data['MACD_Signal'], mode='lines', name='MACD Signal', line=dict(color='red')))
+        macd_fig.add_trace(go.Bar(x=data[datetime_col], y=data['MACD_Hist'], name='MACD Histogram'))
+        macd_fig.update_layout(
+            title="MACD (Moving Average Convergence Divergence)",
+            yaxis_title='MACD',
+            xaxis_title='Date',
+            template='plotly_dark',
+            xaxis_rangeslider_visible=False,
+        )
+
+    # Stochastic Oscillator subplot
+    stoch_fig = go.Figure()
+    if 'Stochastic Oscillator' in selected_indicators:
+        stoch_fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Stoch'], mode='lines', name='Stochastic Oscillator', line=dict(color='blue')))
+        stoch_fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Stoch_Signal'], mode='lines', name='Stochastic Signal', line=dict(color='red')))
+        stoch_fig.update_layout(
+            title="Stochastic Oscillator",
+            yaxis_title='Stochastic Oscillator',
+            xaxis_title='Date',
+            template='plotly_dark',
+            xaxis_rangeslider_visible=False,
+        )
+
+    # OBV subplot
+    obv_fig = go.Figure()
+    if 'OBV' in selected_indicators:
+        obv_fig.add_trace(go.Scatter(x=data[datetime_col], y=data['OBV'], mode='lines', name='OBV', line=dict(color='blue')))
+        obv_fig.update_layout(
+            title="On-Balance Volume (OBV)",
+            yaxis_title='OBV',
+            xaxis_title='Date',
+            template='plotly_dark',
+            xaxis_rangeslider_visible=False,
+        )
+
+
+    # Render additional subplots
+    if 'RSI' in selected_indicators:
+        st.plotly_chart(rsi_fig, use_container_width=True)
+    if 'MACD' in selected_indicators:
+        st.plotly_chart(macd_fig, use_container_width=True)
+    if 'Stochastic Oscillator' in selected_indicators:
+        st.plotly_chart(stoch_fig, use_container_width=True)
+    if 'OBV' in selected_indicators:
+        st.plotly_chart(obv_fig, use_container_width=True)
+
+    # Update Plotly chart config
+    config = dict({'scrollZoom': not draw_trend_line})
+
+    st.plotly_chart(fig, use_container_width=True, config=config)
+
+    # Define a threshold for high volume
+    # VOLUME_THRESHOLD = 1000
+
+    # Function to decode contract symbol
+    # def decode_contract_symbol(contract_symbol):
+    #   from datetime import datetime
+    # Extract the ticker symbol, expiration date, option type, and strike price from the contract symbol
+    #  ticker_symbol = contract_symbol[:-15]
+    # expiration_date = datetime.strptime(contract_symbol[-15:-9], '%y%m%d').date()
+    # option_type = 'Call' if contract_symbol[-9] == 'C' else 'Put'
+    # strike_price = int(contract_symbol[-8:]) / 1000
+
+    # return ticker_symbol, expiration_date, option_type, strike_price
+
+    # @st.cache_data
+    # def get_high_volume_options(ticker_symbol):
+    # Create a ticker object
+    #    ticker = yf.Ticker(ticker_symbol)
+
+    # Get all expiry dates
+    #   expiry_dates = ticker.options
+
+    # Initialize an empty DataFrame to store all high volume options
+    #  high_volume_options = pd.DataFrame()
+
+    # Loop through all expiry dates
+    # for expiry_date in expiry_dates:
+    # Get options data for this expiry date
+    #    options_data = ticker.option_chain(expiry_date)
+
+    # The returned data is a named tuple containing two dataframes: calls and puts
+    #   calls_data = options_data.calls
+    #  puts_data = options_data.puts
+
+    # Filter for high volume options
+    # high_volume_calls = calls_data[calls_data['volume'] > VOLUME_THRESHOLD].copy()
+    # high_volume_puts = puts_data[puts_data['volume'] > VOLUME_THRESHOLD].copy()
+
+    # Add option type column
+    # if not high_volume_calls.empty:
+    #   high_volume_calls.loc[:, 'Option Type'] = 'Call'
+    # if not high_volume_puts.empty:
+    #   high_volume_puts.loc[:, 'Option Type'] = 'Put'
+
+    # Concatenate calls and puts data
+    # high_volume_options_date = pd.concat([high_volume_calls, high_volume_puts])
+
+    # Append to the overall DataFrame
+    # high_volume_options = pd.concat([high_volume_options, high_volume_options_date])
+
+    # Decode contract symbols
+    # high_volume_options[['Ticker Symbol', 'Expiration Date', 'Option Type', 'Strike Price']] = high_volume_options.apply(lambda row: decode_contract_symbol(row['contractSymbol']), axis=1, result_type='expand')
+
+    # Reorder and rename columns to match the screenshot
+    # high_volume_options = high_volume_options[['Ticker Symbol', 'contractSymbol', 'Expiration Date', 'lastTradeDate', 'Strike Price', 'lastPrice', 'bid', 'ask', 'change', 'percentChange', 'volume', 'openInterest', 'impliedVolatility', 'inTheMoney', 'Option Type']]
+    # high_volume_options.columns = ['Ticker', 'Contract', 'DTE', 'Last Trade Date', 'Strike', 'Last', 'Bid', 'Ask', 'Change', 'Percent Change', 'Volume', 'Open Interest', 'IV', 'ITM', 'Type']
+
+    # return high_volume_options
+
+    # Fetch high volume options
+    # high_volume_options = get_high_volume_options(ticker)
+
+    # Create tables for top calls and puts
+    # top_calls = high_volume_options[high_volume_options['Type'] == 'Call'].nlargest(10, 'Volume')
+    # top_puts = high_volume_options[high_volume_options['Type'] == 'Put'].nlargest(10, 'Volume')
+
+    # Display the tables
+    # st.subheader("Top 10 Most Active Calls")
+    # st.write(top_calls)
+
+    # st.subheader("Top 10 Most Active Puts")
+    # st.write(top_puts)
+
+    # Calculate key volume support
+    # def calculate_key_volume_support(data):
+    #    volume_price = data[['Close', 'Volume']].copy()
+    #   volume_price['Volume x Close'] = volume_price['Close'] * volume_price['Volume']
+
+    # Group by price levels and calculate the volume x close
+    #  volume_support_levels = volume_price.groupby('Close')['Volume x Close'].sum()
+
+    # Find the price level with the highest volume x close (strongest support)
+    # highest_volume_support_level = volume_support_levels.idxmax()
+
+    # Find the price level with the lowest volume x close (weakest support)
+    # lowest_volume_support_level = volume_support_levels.idxmin()
+
+    # return highest_volume_support_level, lowest_volume_support_level
+
+    # Identify support and resistance levels
+    # def identify_support_resistance(data):
+    #   pivots = []
+    #  max_list = []
+    # min_list = []
+    # for i in range(1, len(data)-1):
+    #   if data['Low'][i] < data['Low'][i-1] and data['Low'][i] < data['Low'][i+1]:
+    #      pivots.append((data[datetime_col][i], data['Low'][i]))
+    #     min_list.append((data[datetime_col][i], data['Low'][i]))
+    # if data['High'][i] > data['High'][i-1] and data['High'][i] > data['High'][i+1]:
+    #    pivots.append((data[datetime_col][i], data['High'][i]))
+    #   max_list.append((data[datetime_col][i], data['High'][i]))
+
+    # return pivots, max_list, min_list
+
+    # Calculate and display key volume support
+    # highest_volume_support, lowest_volume_support = calculate_key_volume_support(data)
+    # st.write(f"Key Volume Support Level: Highest - {highest_volume_support}, Lowest - {lowest_volume_support}")
+
+    # Calculate and display support and resistance levels
+    # pivots, max_list, min_list = identify_support_resistance(data)
+    # st.write("Support and Resistance Levels:")
+    # st.write("Pivots:", pivots)
+    # st.write("Max Levels:", max_list)
+    # st.write("Min Levels:", min_list)
+
+# else:
+#   st.error("Failed to load data. Please check the ticker symbol and date range.")
+
+# Store the initial volume and OI thresholds in the session state
+if 'volume_threshold' not in st.session_state:
+    st.session_state.volume_threshold = 5000
+if 'oi_threshold' not in st.session_state:
+    st.session_state.oi_threshold = 1000
+
+# Slider for volume threshold
+VOLUME_THRESHOLD = st.slider("Volume Threshold", min_value=0, max_value=10000, value=st.session_state.volume_threshold, step=100)
+
+# Slider for OI threshold
+OI_THRESHOLD = st.slider("OI Threshold", min_value=0, max_value=10000, value=st.session_state.oi_threshold, step=100)
+
+# Update session state with the new volume and OI thresholds
+st.session_state.volume_threshold = VOLUME_THRESHOLD
+st.session_state.oi_threshold = OI_THRESHOLD
+
+# Fetch high volume options if button is pressed or if options data was previously shown
+if st.button("Options Data") or 'options_data_shown' in st.session_state:
+    st.subheader("Options Data")
+    options_data.display_options_data(ticker, VOLUME_THRESHOLD, OI_THRESHOLD)
+    st.session_state.options_data_shown = True
 
 else:
-    st.error("No data available for the selected ticker and time frame.")
+    st.error("No data found for the given ticker and time frame.")
