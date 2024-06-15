@@ -417,6 +417,30 @@ if not data.empty:
     # st.write("Pivots:", pivots)
     # st.write("Max Levels:", max_list)
     # st.write("Min Levels:", min_list)
+# Calculate Fear and Greed Index
+def calculate_fear_greed_index(data):
+    fear_greed_index = pd.Series(index=data.index, dtype=float)
+    
+    # Normalize RSI to a 0-1 scale (0 = Fear, 1 = Greed)
+    rsi_normalized = data['RSI'] / 100
+    
+    # Use the distance of the current close price from the SMA as a greed factor
+    sma_distance = data['Close'] / data['SMA'] - 1
+    sma_normalized = (sma_distance - sma_distance.min()) / (sma_distance.max() - sma_distance.min())
+    
+    # Use volume as a proxy for market sentiment (higher volume can indicate higher greed)
+    volume_normalized = (data['Volume'] - data['Volume'].min()) / (data['Volume'].max() - data['Volume'].min())
+    
+    # Combine the factors to create the index
+    fear_greed_index = (rsi_normalized + sma_normalized + volume_normalized) / 3
+    
+    return fear_greed_index
+
+data['FearGreedIndex'] = calculate_fear_greed_index(data)
+
+# Display Fear and Greed Index
+st.subheader("Fear and Greed Index")
+st.line_chart(data['FearGreedIndex'])
 
 # else:
 #   st.error("Failed to load data. Please check the ticker symbol and date range.")
