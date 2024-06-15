@@ -418,18 +418,19 @@ if not data.empty:
     # st.write("Max Levels:", max_list)
     # st.write("Min Levels:", min_list)
 
-# Calculate Fear and Greed Index
+import pandas as pd
+import plotly.graph_objects as go
+import streamlit as st
+
 def calculate_fear_greed_index(data):
-    fear_greed_index = pd.Series(index=data.index, dtype=float)
-    
     # Normalize RSI to a 0-100 scale (0 = Fear, 100 = Greed)
     rsi_normalized = (data['RSI'] - data['RSI'].min()) / (data['RSI'].max() - data['RSI'].min()) * 100
     
-    # Use the distance of the current close price from the SMA as a greed factor
+    # Calculate the distance of the current close price from the SMA as a greed factor
     sma_distance = data['Close'] / data['SMA'] - 1
     sma_normalized = (sma_distance - sma_distance.min()) / (sma_distance.max() - sma_distance.min()) * 100
     
-    # Use volume as a proxy for market sentiment (higher volume can indicate higher greed)
+    # Normalize volume (higher volume can indicate higher greed)
     volume_normalized = (data['Volume'] - data['Volume'].min()) / (data['Volume'].max() - data['Volume'].min()) * 100
     
     # Combine the factors to create the index
@@ -437,15 +438,14 @@ def calculate_fear_greed_index(data):
     
     return fear_greed_index
 
+# Assuming 'data' is your DataFrame containing 'RSI', 'Close', 'SMA', and 'Volume'
 data['FearGreedIndex'] = calculate_fear_greed_index(data)
 
 # Display Fear and Greed Index as a pressure gauge
 st.subheader("Fear and Greed Index")
 
-# Define ranges for the gauge chart
+# Define ranges and colors for the gauge chart
 ranges = [0, 20, 40, 60, 80, 100]
-
-# Define colors for the gauge chart
 colors = ['#FF0000', '#FF4500', '#FFD700', '#32CD32', '#008000', '#006400']
 
 # Create gauge chart
@@ -469,11 +469,8 @@ fig = go.Figure(go.Indicator(
 
 st.plotly_chart(fig)
 
-
-data['FearGreedIndex'] = calculate_fear_greed_index(data)
-
-# Display Fear and Greed Index
-st.subheader("Fear and Greed Index")
+# Display Fear and Greed Index as a line chart
+st.subheader("Fear and Greed Index Over Time")
 st.line_chart(data['FearGreedIndex'])
 
 # else:
