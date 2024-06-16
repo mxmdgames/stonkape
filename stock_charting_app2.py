@@ -9,7 +9,7 @@ import options_data
 #Set page config
 st.set_page_config(page_title="Stock Charting and Technical Analysis App", layout="wide")
 
-Custom CSS for a professional look
+#Custom CSS for a professional look
 st.markdown(
 """
 <style>
@@ -30,17 +30,17 @@ color: #f0f0f0;
 unsafe_allow_html=True
 )
 
-Title and description
+#Title and description
 st.title("Stock Charting and Technical Analysis")
 st.subheader("An advanced tool for technical analysis")
 
-User input for stock ticker and time frame
+#User input for stock ticker and time frame
 ticker = st.text_input("Enter Stock Ticker", value="GME", max_chars=10)
 
-Time frame selection
+#Time frame selection
 time_frame = st.selectbox("Select Time Frame", ["Intraday", "1 Day", "5 Day", "1 Month", "6 Months", "1 Year", "YTD", "5Y", "4 Hour"])
 
-Mapping time frames to yfinance intervals
+#Mapping time frames to yfinance intervals
 time_frame_mapping = {
 "Intraday": "5m",
 "1 Day": "1d",
@@ -63,11 +63,11 @@ period_mapping = {
 "5Y": "5y",
 }
 
-Initialize period and interval
+#Initialize period and interval
 interval = time_frame_mapping[time_frame]
 period = period_mapping[time_frame]
 
-Function to aggregate data
+#Function to aggregate data
 def aggregate_data(data, interval):
 if interval == "1h":
 return data.resample('H').agg({
@@ -88,7 +88,7 @@ return data.resample('4H').agg({
 else:
 return data
 
-Function to load data without caching
+#Function to load data without caching
 @lru_cache(maxsize=None)
 def load_data_uncached(ticker, period, interval):
 data = yf.download(ticker, period=period, interval=interval, progress=False) # Disable progress bar
@@ -102,7 +102,7 @@ data = aggregate_data(data, interval)
 data.reset_index(inplace=True)
 return data
 
-Fetching stock data
+#Fetching stock data
 def load_data(ticker, period, interval):
 return load_data_uncached(ticker, period, interval)
 
@@ -110,20 +110,20 @@ def refresh_data(ticker, period, interval):
 data = load_data_uncached(ticker, period, interval)
 return data
 
-Refresh button
+#Refresh button
 if st.button("Refresh Data"):
 data = refresh_data(ticker, period, interval)
 else:
 data = load_data(ticker, period, interval)
 
-Check if data is loaded before proceeding
+#Check if data is loaded before proceeding
 if not data.empty:
 # Display raw data
 st.subheader("Raw Data")
 st.write(data.tail())
 
-scss
-Copy code
+#scss
+#Copy code
 # Calculate technical indicators
 def calculate_sma(data, window):
     return ta.trend.SMAIndicator(data['Close'], window=window).sma_indicator()
