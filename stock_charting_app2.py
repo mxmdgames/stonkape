@@ -395,4 +395,5 @@ else:
 # Button to search for news related to the stock
 if st.button("Search News for Stock"):
     search_url = f"https://www.google.com/search?q={ticker}+stock+news"
-    webbrowser.open(search_url, new=1)  # Opens the URL in a new window
+    st.markdown(f"[Open News for {ticker}]({search_url})", unsafe_allow_html=True)
+
