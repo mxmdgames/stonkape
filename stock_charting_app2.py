@@ -85,8 +85,8 @@ def aggregate_data(data, interval):
 'Close': 'last',
 'Volume': 'sum'
 }).dropna().reset_index()
-else:
-return data
+    else:
+        return data
 
 #Function to load data without caching
 @lru_cache(maxsize=None)
