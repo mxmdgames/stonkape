@@ -67,7 +67,14 @@ period_mapping = {
 # Initialize period and interval
 interval = time_frame_mapping.get(time_frame, "1d")
 period = period_mapping.get(time_frame, "1d")
-
+# Function to get company name from ticker
+def get_company_name(ticker):
+    try:
+        company = yf.Ticker(ticker)
+        return company.info['longName']
+    except KeyError:
+        st.error("Invalid ticker or unable to fetch company name.")
+        return ticker
 # Function to aggregate data
 def aggregate_data(data, interval):
     if interval == "1h":
@@ -393,12 +400,15 @@ if st.button("Vol Sup/Res Pivot Points"):
 else:
     st.error("Failed to load data. Please check the ticker symbol and date range.")
 
+# Get company name
+company_name = get_company_name(ticker)
+
 # Button to search for news on Google
 if st.button("Search News on Google"):
-    google_search_url = f"https://www.google.com/search?q={ticker}+stock+news"
-    st.markdown(f'[Click here to view Google News for {ticker}]({google_search_url})', unsafe_allow_html=True)
+    google_search_url = f"https://www.google.com/search?q={company_name}+stock+news"
+    st.markdown(f'[Click here to view Google News for {company_name}]({google_search_url})', unsafe_allow_html=True)
 
 # Button to search for news on BNN Bloomberg
 if st.button("Search News on BNN Bloomberg"):
-    bnn_bloomberg_search_url = f"https://www.bnnbloomberg.ca/search?q={ticker}"
-    st.markdown(f'[Click here to view BNN Bloomberg News for {ticker}]({bnn_bloomberg_search_url})', unsafe_allow_html=True)
+    bnn_bloomberg_search_url = f"https://www.bnnbloomberg.ca/search?q={company_name}"
+    st.markdown(f'[Click here to view BNN Bloomberg News for {company_name}]({bnn_bloomberg_search_url})', unsafe_allow_html=True)
