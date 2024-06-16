@@ -1,82 +1,21 @@
-import dash
-from dash import dcc, html, Input, Output, State
-import dash_bootstrap_components as dbc
+import streamlit as st
 import yfinance as yf
 import pandas as pd
 import plotly.graph_objects as go
 import ta
 import options_data  # Ensure you have this module implemented
 
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+# Function to load data from yfinance
+def load_data(ticker, period, interval):
+    data = yf.download(ticker, period=period, interval=interval)
+    if data.empty:
+        return data
+    if interval in ["1h", "4h"]:
+        data = aggregate_data(data, interval)
+    data.reset_index(inplace=True)
+    return data
 
-app.layout = html.Div([
-    dbc.Row(dbc.Col(html.H1("Stock Charting and Technical Analysis App"), width={'size': 6, 'offset': 3})),
-    dbc.Row(dbc.Col(dcc.Input(id='ticker-input', type='text', value='GME', maxLength=10, style={'width': '50%'}), width={'size': 6, 'offset': 3})),
-    dbc.Row(dbc.Col(dcc.Dropdown(
-        id='time-frame-dropdown',
-        options=[
-            {'label': 'Intraday', 'value': 'Intraday'},
-            {'label': '1 Day', 'value': '1 Day'},
-            {'label': '5 Day', 'value': '5 Day'},
-            {'label': '1 Month', 'value': '1 Month'},
-            {'label': '6 Months', 'value': '6 Months'},
-            {'label': '1 Year', 'value': '1 Year'},
-            {'label': 'YTD', 'value': 'YTD'},
-            {'label': '5Y', 'value': '5Y'},
-            {'label': '4 Hour', 'value': '4 Hour'},
-        ],
-        value='1 Year',
-        style={'width': '50%'}
-    ), width={'size': 6, 'offset': 3})),
-    dbc.Row(dbc.Col(dbc.Button('Refresh Data', id='refresh-button', n_clicks=0), width={'size': 6, 'offset': 3})),
-    dbc.Row(dbc.Col(dcc.Graph(id='stock-chart'), width={'size': 10, 'offset': 1})),
-    dbc.Row(dbc.Col(dcc.Checklist(
-        id='indicators-checklist',
-        options=[
-            {'label': 'SMA', 'value': 'SMA'},
-            {'label': 'EMA', 'value': 'EMA'},
-            {'label': 'RSI', 'value': 'RSI'},
-            {'label': 'MACD', 'value': 'MACD'},
-            {'label': 'Stochastic Oscillator', 'value': 'Stochastic Oscillator'},
-            {'label': 'BBands', 'value': 'BBands'},
-            {'label': 'Ichimoku Cloud', 'value': 'Ichimoku Cloud'},
-            {'label': 'Parabolic SAR', 'value': 'Parabolic SAR'},
-            {'label': 'OBV', 'value': 'OBV'},
-        ],
-        value=['SMA', 'EMA', 'RSI'],
-        inline=True
-    ), width={'size': 10, 'offset': 1})),
-    dbc.Row(dbc.Col(dcc.Graph(id='additional-charts'), width={'size': 10, 'offset': 1})),
-    dbc.Row(dbc.Col(html.Div(id='fibonacci-levels', style={'width': '100%'}), width={'size': 10, 'offset': 1})),
-    dbc.Row(dbc.Col(dcc.Slider(id='volume-threshold', min=0, max=10000, step=100, value=5000, marks={i: str(i) for i in range(0, 10001, 2000)}), width={'size': 10, 'offset': 1})),
-    dbc.Row(dbc.Col(dcc.Slider(id='oi-threshold', min=0, max=10000, step=100, value=1000, marks={i: str(i) for i in range(0, 10001, 2000)}), width={'size': 10, 'offset': 1})),
-    dbc.Row(dbc.Col(dcc.Graph(id='options-chart'), width={'size': 10, 'offset': 1})),
-    dbc.Row(dbc.Col(dcc.Graph(id='fear-greed-index'), width={'size': 10, 'offset': 1})),
-])
-
-time_frame_mapping = {
-    "Intraday": "5m",
-    "1 Day": "1d",
-    "5 Day": "1d",
-    "1 Month": "1d",
-    "6 Months": "1d",
-    "1 Year": "1d",
-    "YTD": "1d",
-    "5Y": "1d",
-    "4 Hour": "1h",
-}
-
-period_mapping = {
-    "Intraday": "1d",
-    "1 Day": "1d",
-    "5 Day": "5d",
-    "1 Month": "1mo",
-    "6 Months": "6mo",
-    "1 Year": "1y",
-    "YTD": "ytd",
-    "5Y": "5y",
-}
-
+# Function to aggregate data for different intervals
 def aggregate_data(data, interval):
     if interval == "1h":
         return data.resample('H').agg({
@@ -97,15 +36,7 @@ def aggregate_data(data, interval):
     else:
         return data
 
-def load_data(ticker, period, interval):
-    data = yf.download(ticker, period=period, interval=interval)
-    if data.empty:
-        return data
-    if interval in ["1h", "4h"]:
-        data = aggregate_data(data, interval)
-    data.reset_index(inplace=True)
-    return data
-
+# Function to calculate technical indicators
 def calculate_technical_indicators(data):
     data['SMA'] = ta.trend.SMAIndicator(data['Close'], window=20).sma_indicator()
     data['EMA'] = ta.trend.EMAIndicator(data['Close'], window=20).ema_indicator()
@@ -122,6 +53,7 @@ def calculate_technical_indicators(data):
     data['OBV'] = ta.volume.OnBalanceVolumeIndicator(data['Close'], data['Volume']).on_balance_volume()
     return data
 
+# Function to calculate Fibonacci retracement levels
 def calculate_fibonacci_retracement(data):
     max_price = data['High'].max()
     min_price = data['Low'].min()
@@ -129,6 +61,7 @@ def calculate_fibonacci_retracement(data):
     levels = [max_price - 0.236 * diff, max_price - 0.382 * diff, max_price - 0.5 * diff, max_price - 0.618 * diff, min_price]
     return levels
 
+# Function to calculate the Fear and Greed Index
 def calculate_fear_greed_index(data):
     rsi_normalized = (data['RSI'] - data['RSI'].min()) / (data['RSI'].max() - data['RSI'].min()) * 100
     sma_distance = data['Close'] / data['SMA'] - 1
@@ -137,6 +70,7 @@ def calculate_fear_greed_index(data):
     fear_greed_index = (rsi_normalized + sma_normalized + volume_normalized) / 3
     return fear_greed_index
 
+# Function to plot stock data and technical indicators
 def plot_stock_data(data, ticker, indicators, fibonacci_levels, show_volume):
     fig = go.Figure()
     datetime_col = 'Datetime' if 'Datetime' in data.columns else 'Date'
@@ -178,6 +112,7 @@ def plot_stock_data(data, ticker, indicators, fibonacci_levels, show_volume):
     )
     return fig
 
+# Function to plot additional technical indicators
 def plot_additional_charts(data, indicators):
     datetime_col = 'Datetime' if 'Datetime' in data.columns else 'Date'
     additional_fig = go.Figure()
@@ -200,6 +135,7 @@ def plot_additional_charts(data, indicators):
     )
     return additional_fig
 
+# Function to plot the Fear and Greed Index
 def plot_fear_greed_index(data):
     fig = go.Figure(go.Indicator(
         mode="gauge+number",
@@ -221,31 +157,43 @@ def plot_fear_greed_index(data):
     ))
     return fig
 
-@app.callback(
-    [Output('stock-chart', 'figure'), Output('additional-charts', 'figure'), Output('fibonacci-levels', 'children'), Output('fear-greed-index', 'figure'), Output('options-chart', 'figure')],
-    [Input('refresh-button', 'n_clicks'), Input('volume-threshold', 'value'), Input('oi-threshold', 'value')],
-    [State('ticker-input', 'value'), State('time-frame-dropdown', 'value'), State('indicators-checklist', 'value')]
+# UI components for Streamlit
+st.title("Stock Charting and Technical Analysis App")
+
+ticker = st.text_input('Enter stock ticker', 'GME')
+time_frame = st.selectbox(
+    'Select time frame',
+    ['Intraday', '1 Day', '5 Day', '1 Month', '6 Months', '1 Year', 'YTD', '5Y', '4 Hour']
 )
-def update_charts(n_clicks, volume_threshold, oi_threshold, ticker, time_frame, indicators):
+refresh = st.button('Refresh Data')
+volume_threshold = st.slider('Volume Threshold', 0, 10000, 5000, step=100)
+oi_threshold = st.slider('Open Interest Threshold', 0, 10000, 1000, step=100)
+indicators = st.multiselect(
+    'Select Technical Indicators',
+    ['SMA', 'EMA', 'RSI', 'MACD', 'Stochastic Oscillator', 'BBands', 'Ichimoku Cloud', 'Parabolic SAR', 'OBV'],
+    default=['SMA', 'EMA', 'RSI']
+)
+
+if refresh:
     interval = time_frame_mapping[time_frame]
     period = period_mapping[time_frame]
     data = load_data(ticker, period, interval)
+    
     if data.empty:
-        return {}, {}, "", {}, {}
+        st.write("No data found for the selected ticker and time frame.")
+    else:
+        data = calculate_technical_indicators(data)
+        fibonacci_levels = calculate_fibonacci_retracement(data)
+        data['FearGreedIndex'] = calculate_fear_greed_index(data)
 
-    data = calculate_technical_indicators(data)
-    fibonacci_levels = calculate_fibonacci_retracement(data)
-    data['FearGreedIndex'] = calculate_fear_greed_index(data)
+        stock_fig = plot_stock_data(data, ticker, indicators, fibonacci_levels, show_volume=True)
+        additional_fig = plot_additional_charts(data, indicators)
+        fear_greed_fig = plot_fear_greed_index(data)
 
-    stock_fig = plot_stock_data(data, ticker, indicators, fibonacci_levels, show_volume=True)
-    additional_fig = plot_additional_charts(data, indicators)
-    fear_greed_fig = plot_fear_greed_index(data)
+        st.plotly_chart(stock_fig)
+        st.plotly_chart(additional_fig)
+        st.write("Fibonacci Levels: " + ", ".join([f"{level:.2f}" for level in fibonacci_levels]))
+        st.plotly_chart(fear_greed_fig)
 
-    options_fig = options_data.display_options_data(ticker, volume_threshold, oi_threshold)
-
-    fibonacci_levels_text = "Fibonacci Levels: " + ", ".join([f"{level:.2f}" for level in fibonacci_levels])
-
-    return stock_fig, additional_fig, fibonacci_levels_text, fear_greed_fig, options_fig
-
-if __name__ == '__main__':
-    app.run_server(debug=True)
+        options_fig = options_data.display_options_data(ticker, volume_threshold, oi_threshold)
+        st.plotly_chart(options_fig)
