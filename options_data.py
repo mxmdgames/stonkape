@@ -62,7 +62,7 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
                    align='left'))
     ])
     fig_calls.update_layout(title="High Volume Call Options")
-    st.plotly_chart(fig_calls)
+
 
     fig_puts = go.Figure(data=[go.Table(
         header=dict(values=list(high_volume_puts.columns),
