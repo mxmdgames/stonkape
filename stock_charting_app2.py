@@ -396,9 +396,6 @@ if st.button("Options Data") or 'options_data_shown' in st.session_state:
 else:
     st.error("No data found for the given ticker and time frame.")
 
-
-else:
-    st.error("No data found for the given ticker and time frame.")
 def calculate_fear_greed_index(data):
     # Normalize RSI to a 0-100 scale (0 = Fear, 100 = Greed)
     rsi_normalized = (data['RSI'] - data['RSI'].min()) / (data['RSI'].max() - data['RSI'].min()) * 100
