@@ -422,7 +422,6 @@ st.subheader("Fear and Greed Index Over Time")
 st.line_chart(data['FearGreedIndex'])
 
 
-# Function to fetch high volume options data
 def fetch_options_data(ticker, volume_threshold, oi_threshold):
     stock = yf.Ticker(ticker)
     options_expiration_dates = stock.options
@@ -457,7 +456,6 @@ def fetch_options_data(ticker, volume_threshold, oi_threshold):
 
     return all_calls_df, all_puts_df
 
-# Function to display options data
 def display_options_data(ticker, volume_threshold, oi_threshold):
     try:
         high_volume_calls, high_volume_puts = fetch_options_data(ticker, volume_threshold, oi_threshold)
@@ -478,13 +476,6 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
             st.write("No high volume put options found.")
     except Exception as e:
         st.error(f"Error fetching options data: {e}")
-
-# Store the initial volume and OI thresholds in the session state
-if 'volume_threshold' not in st.session_state:
-    st.session_state.volume_threshold = 5000
-if 'oi_threshold' not in st.session_state:
-    st.session_state.oi_threshold = 1000
-
 # Slider for volume threshold
 VOLUME_THRESHOLD = st.slider("Volume Threshold", min_value=0, max_value=10000, value=st.session_state.volume_threshold, step=100)
 
