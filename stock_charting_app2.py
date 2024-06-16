@@ -157,8 +157,9 @@ if not data.empty:
         close=data['Close'], 
         window=window, 
         smooth_window=smooth_window
-    )
     return stoch.stoch(), stoch.stoch_signal()
+    )
+    
     def calculate_parabolic_sar(data):
         if data.empty or 'High' not in data.columns or 'Low' not in data.columns or 'Close' not in data.columns:
             st.error("Insufficient data to calculate Parabolic SAR.")
