@@ -422,30 +422,3 @@ st.subheader("Fear and Greed Index Over Time")
 st.line_chart(data['FearGreedIndex'])
 
 
-# Initialize volume threshold if not available in the session state
-if 'volume_threshold' not in st.session_state:
-    st.session_state.volume_threshold = 0
-
-# Initialize OI threshold if not available in the session state
-if 'oi_threshold' not in st.session_state:
-    st.session_state.oi_threshold = 0
-
-# Slider for volume threshold
-VOLUME_THRESHOLD = st.slider("Volume Threshold", min_value=0, max_value=10000, value=st.session_state.volume_threshold, step=100)
-
-# Slider for OI threshold
-OI_THRESHOLD = st.slider("OI Threshold", min_value=0, max_value=10000, value=st.session_state.oi_threshold, step=100)
-
-# Update session state with the new volume and OI thresholds
-st.session_state.volume_threshold = VOLUME_THRESHOLD
-st.session_state.oi_threshold = OI_THRESHOLD
-
-# Fetch high volume options if button is pressed or if options data was previously shown
-if 'ticker' in st.session_state:
-    ticker = st.session_state.ticker
-
-if st.button("Options Data") or 'options_data_shown' in st.session_state:
-    st.subheader("Options Data")
-    display_options_data(ticker, VOLUME_THRESHOLD, OI_THRESHOLD)
-    st.session_state.options_data_shown = True
-
