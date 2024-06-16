@@ -422,7 +422,7 @@ st.subheader("Fear and Greed Index Over Time")
 st.line_chart(data['FearGreedIndex'])
 
 # Define a threshold for high volume
-    VOLUME_THRESHOLD = 1000
+VOLUME_THRESHOLD = 1000
 
     # Function to decode contract symbol
     def decode_contract_symbol(contract_symbol):
