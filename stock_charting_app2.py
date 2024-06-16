@@ -6,11 +6,6 @@ import ta
 from functools import lru_cache
 import options_data
 
-
-
-
-
-
 # Set page config
 st.set_page_config(page_title="Stock Charting and Technical Analysis App", layout="wide")
 
@@ -69,8 +64,8 @@ period_mapping = {
 }
 
 # Initialize period and interval
-interval = time_frame_mapping[time_frame]
-period = period_mapping[time_frame]
+interval = time_frame_mapping.get(time_frame, "1d")
+period = period_mapping.get(time_frame, "1d")
 
 # Function to aggregate data
 def aggregate_data(data, interval):
@@ -159,15 +154,6 @@ if not data.empty:
             st.error("Insufficient data to calculate Parabolic SAR.")
             return pd.Series([None] * len(data))
         return ta.trend.PSARIndicator(data['High'], data['Low'], data['Close']).psar()
-    def calculate_obv(data):
-        return ta.volume.OnBalanceVolumeIndicator(data['Close'], data['Volume']).on_balance_volume()
-    def calculate_options_flow(data):
-        # Get options chain
-        options_chain = yf.Ticker(ticker).option_chain(data['Date'].iloc[-1].date())
-
-
-
-    
 
     data['SMA'] = calculate_sma(data, window=20)
     data['EMA'] = calculate_ema(data, window=20)
@@ -179,11 +165,9 @@ if not data.empty:
     data['Parabolic_SAR'] = calculate_parabolic_sar(data)
     data['OBV'] = calculate_obv(data)
 
-
-    
     # Add checkboxes for indicators
     st.sidebar.title("Technical Indicators")
-    selected_indicators = st.sidebar.multiselect("Select Indicators", ['SMA', 'EMA', 'RSI', 'MACD','Stochastic Oscillator', 'BBands', 'Ichimoku Cloud', 'Parabolic SAR', 'OBV'])
+    selected_indicators = st.sidebar.multiselect("Select Indicators", ['SMA', 'EMA', 'RSI', 'MACD', 'Stochastic Oscillator', 'BBands', 'Ichimoku Cloud', 'Parabolic SAR', 'OBV'])
 
     # Add volume checkbox
     show_volume = st.sidebar.checkbox("Show Volume")
@@ -225,7 +209,7 @@ if not data.empty:
         fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Ichimoku_Conv'], mode='lines', name='Ichimoku Conversion Line', line=dict(color='grey')))
     if 'Parabolic SAR' in selected_indicators:
         fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Parabolic_SAR'], mode='markers', name='Parabolic SAR', marker=dict(color='green', symbol='circle', size=5)))
-    
+
     # Add Fibonacci retracement levels
     for level in fibonacci_levels:
         fig.add_trace(go.Scatter(x=[data[datetime_col].iloc[0], data[datetime_col].iloc[-1]], y=[level, level], mode='lines', name=f'Fibonacci Level {level:.2f}', line=dict(dash='dash')))
@@ -302,7 +286,6 @@ if not data.empty:
             xaxis_rangeslider_visible=False,
         )
 
-
     # Render additional subplots
     if 'RSI' in selected_indicators:
         st.plotly_chart(rsi_fig, use_container_width=True)
@@ -318,11 +301,61 @@ if not data.empty:
 
     st.plotly_chart(fig, use_container_width=True, config=config)
 
+    # Fear and Greed Index Calculation
+    def calculate_fear_greed_index(data):
+        # Normalize RSI to a 0-100 scale (0 = Fear, 100 = Greed)
+        rsi_normalized = (data['RSI'] - data['RSI'].min()) / (data['RSI'].max() - data['RSI'].min()) * 100
+        
+        # Calculate the distance of the current close price from the SMA as a greed factor
+        sma_distance = data['Close'] / data['SMA'] - 1
+        sma_normalized = (sma_distance - sma_distance.min()) / (sma_distance.max() - sma_distance.min()) * 100
+        
+        # Normalize volume (higher volume can indicate higher greed)
+        volume_normalized = (data['Volume'] - data['Volume'].min()) / (data['Volume'].max() - data['Volume'].min()) * 100
+        
+        # Combine the factors to create the index
+        fear_greed_index = (rsi_normalized + sma_normalized + volume_normalized) / 3
+        
+        return fear_greed_index
 
+    # Assuming 'data' is your DataFrame containing 'RSI', 'Close', 'SMA', and 'Volume'
+    data['FearGreedIndex'] = calculate_fear_greed_index(data)
+
+    # Display Fear and Greed Index as a pressure gauge
+    st.subheader("Fear and Greed Index")
+
+    # Define ranges and colors for the gauge chart
+    ranges = [0, 20, 40, 60, 80, 100]
+    colors = ['#FF0000', '#FF4500', '#FFD700', '#32CD32', '#008000', '#006400']
+
+    # Create gauge chart
+    fig = go.Figure(go.Indicator(
+        mode = "gauge+number",
+        value = data['FearGreedIndex'].iloc[-1],  # Current Fear and Greed Index value
+        domain = {'x': [0, 1], 'y': [0, 1]},
+        title = {'text': "Fear and Greed Index"},
+        gauge = {
+            'axis': {'range': [None, 100], 'tickvals': ranges, 'ticktext': ['Extreme Fear', 'Fear', 'Neutral', 'Greed', 'Extreme Greed']},
+            'bar': {'color': "black"},
+            'steps' : [
+                {'range': [0, 20], 'color': '#FF0000'},
+                {'range': [20, 40], 'color': '#FF4500'},
+                {'range': [40, 60], 'color': '#FFD700'},
+                {'range': [60, 80], 'color': '#32CD32'},
+                {'range': [80, 100], 'color': '#008000'}],
+            'threshold' : {'line': {'color': "red", 'width': 4}, 'thickness': 0.75, 'value': data['FearGreedIndex'].iloc[-1]}
+        }
+    ))
+
+    st.plotly_chart(fig)
+
+    # Display Fear and Greed Index as a line chart
+    st.subheader("Fear and Greed Index Over Time")
+    st.line_chart(data['FearGreedIndex'])
 else:
     st.error("Failed to load data. Please check the ticker symbol and date range.")
-# Store the initial volume and OI thresholds in the session state
 
+# Store the initial volume and OI thresholds in the session state
 if 'volume_threshold' not in st.session_state:
     st.session_state.volume_threshold = 5000
 if 'oi_threshold' not in st.session_state:
@@ -343,56 +376,3 @@ if st.button("Options Data") or 'options_data_shown' in st.session_state:
     st.subheader("Options Data")
     options_data.display_options_data(ticker, VOLUME_THRESHOLD, OI_THRESHOLD)
     st.session_state.options_data_shown = True
-
-else:
-    st.error("No data found for the given ticker and time frame.")
-def calculate_fear_greed_index(data):
-    # Normalize RSI to a 0-100 scale (0 = Fear, 100 = Greed)
-    rsi_normalized = (data['RSI'] - data['RSI'].min()) / (data['RSI'].max() - data['RSI'].min()) * 100
-    
-    # Calculate the distance of the current close price from the SMA as a greed factor
-    sma_distance = data['Close'] / data['SMA'] - 1
-    sma_normalized = (sma_distance - sma_distance.min()) / (sma_distance.max() - sma_distance.min()) * 100
-    
-    # Normalize volume (higher volume can indicate higher greed)
-    volume_normalized = (data['Volume'] - data['Volume'].min()) / (data['Volume'].max() - data['Volume'].min()) * 100
-    
-    # Combine the factors to create the index
-    fear_greed_index = (rsi_normalized + sma_normalized + volume_normalized) / 3
-    
-    return fear_greed_index
-
-# Assuming 'data' is your DataFrame containing 'RSI', 'Close', 'SMA', and 'Volume'
-data['FearGreedIndex'] = calculate_fear_greed_index(data)
-
-# Display Fear and Greed Index as a pressure gauge
-st.subheader("Fear and Greed Index")
-
-# Define ranges and colors for the gauge chart
-ranges = [0, 20, 40, 60, 80, 100]
-colors = ['#FF0000', '#FF4500', '#FFD700', '#32CD32', '#008000', '#006400']
-
-# Create gauge chart
-fig = go.Figure(go.Indicator(
-    mode = "gauge+number",
-    value = data['FearGreedIndex'].iloc[-1],  # Current Fear and Greed Index value
-    domain = {'x': [0, 1], 'y': [0, 1]},
-    title = {'text': "Fear and Greed Index"},
-    gauge = {
-        'axis': {'range': [None, 100], 'tickvals': ranges, 'ticktext': ['Extreme Fear', 'Fear', 'Neutral', 'Greed', 'Extreme Greed']},
-        'bar': {'color': "black"},
-        'steps' : [
-            {'range': [0, 20], 'color': '#FF0000'},
-            {'range': [20, 40], 'color': '#FF4500'},
-            {'range': [40, 60], 'color': '#FFD700'},
-            {'range': [60, 80], 'color': '#32CD32'},
-            {'range': [80, 100], 'color': '#008000'}],
-        'threshold' : {'line': {'color': "red", 'width': 4}, 'thickness': 0.75, 'value': data['FearGreedIndex'].iloc[-1]}
-    }
-))
-
-st.plotly_chart(fig)
-
-# Display Fear and Greed Index as a line chart
-st.subheader("Fear and Greed Index Over Time")
-st.line_chart(data['FearGreedIndex'])
