@@ -376,3 +376,50 @@ if st.button("Options Data") or 'options_data_shown' in st.session_state:
     st.subheader("Options Data")
     options_data.display_options_data(ticker, VOLUME_THRESHOLD, OI_THRESHOLD)
     st.session_state.options_data_shown = True
+# Calculate key volume support
+def calculate_key_volume_support(data):
+    volume_price = data[['Close', 'Volume']].copy()
+    volume_price['Volume x Close'] = volume_price['Close'] * volume_price['Volume']
+
+    # Group by price levels and calculate the volume x close
+    volume_support_levels = volume_price.groupby('Close')['Volume x Close'].sum()
+
+    # Find the price level with the highest volume x close (strongest support)
+    highest_volume_support_level = volume_support_levels.idxmax()
+
+    # Find the price level with the lowest volume x close (weakest support)
+    lowest_volume_support_level = volume_support_levels.idxmin()
+
+    return highest_volume_support_level, lowest_volume_support_level
+
+# Identify support and resistance levels
+def identify_support_resistance(data, datetime_col='Date'):
+    pivots = []
+    max_list = []
+    min_list = []
+    for i in range(1, len(data)-1):
+        if data['Low'][i] < data['Low'][i-1] and data['Low'][i] < data['Low'][i+1]:
+            pivots.append((data[datetime_col][i], data['Low'][i]))
+            min_list.append((data[datetime_col][i], data['Low'][i]))
+        if data['High'][i] > data['High'][i-1] and data['High'][i] > data['High'][i+1]:
+            pivots.append((data[datetime_col][i], data['High'][i]))
+            max_list.append((data[datetime_col][i], data['High'][i]))
+
+    return pivots, max_list, min_list
+
+# Assume 'data' is a DataFrame already loaded with the necessary columns
+
+# Calculate and display key volume support
+highest_volume_support, lowest_volume_support = calculate_key_volume_support(data)
+st.write(f"Key Volume Support Level: Highest - {highest_volume_support}, Lowest - {lowest_volume_support}")
+
+# Calculate and display support and resistance levels
+pivots, max_list, min_list = identify_support_resistance(data)
+st.write("Support and Resistance Levels:")
+st.write("Pivots:", pivots)
+st.write("Max Levels:", max_list)
+st.write("Min Levels:", min_list)
+
+# In case data fails to load
+else:
+    st.error("Failed to load data. Please check the ticker symbol and date range.")
