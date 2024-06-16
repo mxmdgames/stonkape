@@ -377,20 +377,18 @@ if st.button("Options Data") or 'options_data_shown' in st.session_state:
     st.subheader("Options Data")
     options_data.display_options_data(ticker, VOLUME_THRESHOLD, OI_THRESHOLD)
     st.session_state.options_data_shown = True
-# Assuming 'data' is a DataFrame already loaded with the necessary columns
-data = pd.DataFrame()  # Replace this with actual data loading logic
 
- # Display button for further data analysis
+# Display button for further data analysis
 if st.button("Vol Sup/Res Pivot Points"):
-        # Calculate and display key volume support
-        highest_volume_support, lowest_volume_support = calculate_key_volume_support(data)
-        st.write(f"Key Volume Support Level: Highest - {highest_volume_support}, Lowest - {lowest_volume_support}")
+    # Calculate and display key volume support
+    highest_volume_support, lowest_volume_support = calculate_key_volume_support(data)
+    st.write(f"Key Volume Support Level: Highest - {highest_volume_support}, Lowest - {lowest_volume_support}")
 
-        # Calculate and display support and resistance levels
-        pivots, max_list, min_list = identify_support_resistance(data)
-        st.write("Support and Resistance Levels:")
-        st.write("Pivots:", pivots)
-        st.write("Max Levels:", max_list)
-        st.write("Min Levels:", min_list)
+    # Calculate and display support and resistance levels
+    pivots, max_list, min_list = identify_support_resistance(data)
+    st.write("Support and Resistance Levels:")
+    st.write("Pivots:", pivots)
+    st.write("Max Levels:", max_list)
+    st.write("Min Levels:", min_list)
 else:
     st.error("Failed to load data. Please check the ticker symbol and date range.")
