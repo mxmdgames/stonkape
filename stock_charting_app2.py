@@ -319,9 +319,10 @@ if not data.empty:
     st.plotly_chart(fig, use_container_width=True, config=config)
 
 
-#else:
- #   st.error("Failed to load data. Please check the ticker symbol and date range.")"""
+else:
+    st.error("Failed to load data. Please check the ticker symbol and date range.")"""
 # Store the initial volume and OI thresholds in the session state
+
 if 'volume_threshold' not in st.session_state:
     st.session_state.volume_threshold = 5000
 if 'oi_threshold' not in st.session_state:
