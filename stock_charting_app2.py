@@ -381,7 +381,7 @@ if st.button("Options Data") or 'options_data_shown' in st.session_state:
 data = pd.DataFrame()  # Replace this with actual data loading logic
 
  # Display button for further data analysis
-    if st.button("Vol Sup/Res Pivot Points"):
+if st.button("Vol Sup/Res Pivot Points"):
         # Calculate and display key volume support
         highest_volume_support, lowest_volume_support = calculate_key_volume_support(data)
         st.write(f"Key Volume Support Level: Highest - {highest_volume_support}, Lowest - {lowest_volume_support}")
