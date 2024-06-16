@@ -77,8 +77,8 @@ def aggregate_data(data, interval):
 'Close': 'last',
 'Volume': 'sum'
 }).dropna().reset_index()
-elif interval == "4h":
-return data.resample('4H').agg({
+    elif interval == "4h":
+        return data.resample('4H').agg({
 'Open': 'first',
 'High': 'max',
 'Low': 'min',
