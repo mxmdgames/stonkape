@@ -356,7 +356,7 @@ def identify_support_resistance(data):
 if 'show_info' not in st.session_state:
     st.session_state.show_info = False
 
-if st.button('Toggle Info'):
+if st.button('Vol Support and Pivot Points'):
     st.session_state.show_info = not st.session_state.show_info
 
 # Display the information if the button is pressed
