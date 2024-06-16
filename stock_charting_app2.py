@@ -1,6 +1,3 @@
-Here is the improved and refactored version of your Streamlit app code, with unnecessary code removed and without losing any functionality:
-
-```python
 import streamlit as st
 import yfinance as yf
 import pandas as pd
