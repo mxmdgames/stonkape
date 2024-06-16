@@ -150,15 +150,16 @@ if not data.empty:
         ichimoku = ta.trend.IchimokuIndicator(data['High'], data['Low'])
         return ichimoku.ichimoku_a(), ichimoku.ichimoku_b(), ichimoku.ichimoku_base_line(), ichimoku.ichimoku_conversion_line()
         
-    def calculate_stochastic_oscillator(data, window, smooth_window=3):
-        stoch = ta.momentum.StochasticOscillator(
+def calculate_stochastic_oscillator(data, window, smooth_window=3):
+    stoch = ta.momentum.StochasticOscillator(
         high=data['High'], 
         low=data['Low'], 
         close=data['Close'], 
         window=window, 
         smooth_window=smooth_window
-    return stoch.stoch(), stoch.stoch_signal()
     )
+    return stoch.stoch(), stoch.stoch_signal()
+
     
     def calculate_parabolic_sar(data):
         if data.empty or 'High' not in data.columns or 'Low' not in data.columns or 'Close' not in data.columns:
