@@ -390,8 +390,12 @@ st.session_state.oi_threshold = OI_THRESHOLD
 # Fetch high volume options if button is pressed or if options data was previously shown
 if st.button("Options Data") or 'options_data_shown' in st.session_state:
     st.subheader("Options Data")
-    options_data.fetch_options_data(ticker, VOLUME_THRESHOLD, OI_THRESHOLD)
+    options_data = calculate_options_flow(data)  # Call the function here
+    st.write(options_data)  # Display the options data
     st.session_state.options_data_shown = True
+else:
+    st.error("No data found for the given ticker and time frame.")
+
 
 else:
     st.error("No data found for the given ticker and time frame.")
