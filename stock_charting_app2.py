@@ -406,7 +406,7 @@ company_name = get_company_name(ticker)
 # Button to search for news on Google
 if st.button("Search News on Google"):
     google_search_url = f"https://www.google.com/search?q={company_name}+stock+news"
-    st.markdown(f'[Click here to view Google News for {company_name}]({google_search_url})', unsafe_allow_html=True)
+    st.markdown(f'[Click here to view Google News for {company_name}+stock+news]({google_search_url})', unsafe_allow_html=True)
 
 # Button to search for news on BNN Bloomberg
 if st.button("Search News on BNN Bloomberg"):
