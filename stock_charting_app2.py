@@ -4,7 +4,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import ta
 from functools import lru_cache
-import options_data
+from datetime import datetime
 
 
 
@@ -421,28 +421,8 @@ st.plotly_chart(fig)
 st.subheader("Fear and Greed Index Over Time")
 st.line_chart(data['FearGreedIndex'])
 
-# Store the initial volume and OI thresholds in the session state
-if 'volume_threshold' not in st.session_state:
-    st.session_state.volume_threshold = 5000
-if 'oi_threshold' not in st.session_state:
-    st.session_state.oi_threshold = 1000
-
-# Slider for volume threshold
-VOLUME_THRESHOLD = st.slider("Volume Threshold", min_value=0, max_value=10000, value=st.session_state.volume_threshold, step=100)
-
-# Slider for OI threshold
-OI_THRESHOLD = st.slider("OI Threshold", min_value=0, max_value=10000, value=st.session_state.oi_threshold, step=100)
-
-# Update session state with the new volume and OI thresholds
-st.session_state.volume_threshold = VOLUME_THRESHOLD
-st.session_state.oi_threshold = OI_THRESHOLD
-
-# Fetch high volume options if button is pressed or if options data was previously shown
-if st.button("Options Data") or 'options_data_shown' in st.session_state:
-    st.subheader("Options Data")
-    options_data.display_options_data(ticker, VOLUME_THRESHOLD, OI_THRESHOLD)
-    st.session_state.options_data_shown = True
-    def fetch_options_data(ticker, volume_threshold, oi_threshold):
+# Function to fetch high volume options data
+def fetch_options_data(ticker, volume_threshold, oi_threshold):
     stock = yf.Ticker(ticker)
     options_expiration_dates = stock.options
 
@@ -476,6 +456,7 @@ if st.button("Options Data") or 'options_data_shown' in st.session_state:
 
     return all_calls_df, all_puts_df
 
+# Function to display options data
 def display_options_data(ticker, volume_threshold, oi_threshold):
     try:
         high_volume_calls, high_volume_puts = fetch_options_data(ticker, volume_threshold, oi_threshold)
@@ -496,3 +477,25 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
             st.write("No high volume put options found.")
     except Exception as e:
         st.error(f"Error fetching options data: {e}")
+
+# Store the initial volume and OI thresholds in the session state
+if 'volume_threshold' not in st.session_state:
+    st.session_state.volume_threshold = 5000
+if 'oi_threshold' not in st.session_state:
+    st.session_state.oi_threshold = 1000
+
+# Slider for volume threshold
+VOLUME_THRESHOLD = st.slider("Volume Threshold", min_value=0, max_value=10000, value=st.session_state.volume_threshold, step=100)
+
+# Slider for OI threshold
+OI_THRESHOLD = st.slider("OI Threshold", min_value=0, max_value=10000, value=st.session_state.oi_threshold, step=100)
+
+# Update session state with the new volume and OI thresholds
+st.session_state.volume_threshold = VOLUME_THRESHOLD
+st.session_state.oi_threshold = OI_THRESHOLD
+
+# Fetch high volume options if button is pressed or if options data was previously shown
+if st.button("Options Data") or 'options_data_shown' in st.session_state:
+    st.subheader("Options Data")
+    display_options_data(ticker, VOLUME_THRESHOLD, OI_THRESHOLD)
+    st.session_state.options_data_shown = True
