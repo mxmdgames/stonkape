@@ -161,9 +161,12 @@ if not data.empty:
         return ta.trend.PSARIndicator(data['High'], data['Low'], data['Close']).psar()
     def calculate_obv(data):
         return ta.volume.OnBalanceVolumeIndicator(data['Close'], data['Volume']).on_balance_volume()
-    def calculate_options_flow(data):
-        # Get options chain
-        options_chain = yf.Ticker(ticker).option_chain(data['Date'].iloc[-1].date())
+def calculate_options_flow(data):
+    # Get options chain
+    options_chain = yf.Ticker(ticker).option_chain(data['Date'].iloc[-1].date())
+
+    # Update the line to retrieve the correct date column
+    options_chain = yf.Ticker(ticker).option_chain(data['Date'].dt.date.iloc[-1])
 
 
 
