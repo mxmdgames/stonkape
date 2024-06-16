@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 import ta
 from functools import lru_cache
 import options_data
+from analysis import calculate_key_volume_support, identify_support_resistance
 
 # Set page config
 st.set_page_config(page_title="Stock Charting and Technical Analysis App", layout="wide")
@@ -376,3 +377,27 @@ if st.button("Options Data") or 'options_data_shown' in st.session_state:
     st.subheader("Options Data")
     options_data.display_options_data(ticker, VOLUME_THRESHOLD, OI_THRESHOLD)
     st.session_state.options_data_shown = True
+# Assuming 'data' is a DataFrame already loaded with the necessary columns
+data = pd.DataFrame()  # Replace this with actual data loading logic
+
+# Function to load your data
+def load_data():
+    # Implement data loading logic here
+    return data
+
+# Display button
+if st.button("Display Data Analysis"):
+    data = load_data()
+    if not data.empty:
+        # Calculate and display key volume support
+        highest_volume_support, lowest_volume_support = calculate_key_volume_support(data)
+        st.write(f"Key Volume Support Level: Highest - {highest_volume_support}, Lowest - {lowest_volume_support}")
+
+        # Calculate and display support and resistance levels
+        pivots, max_list, min_list = identify_support_resistance(data)
+        st.write("Support and Resistance Levels:")
+        st.write("Pivots:", pivots)
+        st.write("Max Levels:", max_list)
+        st.write("Min Levels:", min_list)
+    else:
+        st.error("Failed to load data. Please check the ticker symbol and date range.")
