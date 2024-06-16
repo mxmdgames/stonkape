@@ -421,6 +421,7 @@ st.plotly_chart(fig)
 st.subheader("Fear and Greed Index Over Time")
 st.line_chart(data['FearGreedIndex'])
 
+
 # Function to fetch high volume options data
 def fetch_options_data(ticker, volume_threshold, oi_threshold):
     stock = yf.Ticker(ticker)
@@ -495,6 +496,9 @@ st.session_state.volume_threshold = VOLUME_THRESHOLD
 st.session_state.oi_threshold = OI_THRESHOLD
 
 # Fetch high volume options if button is pressed or if options data was previously shown
+if 'ticker' in st.session_state:
+    ticker = st.session_state.ticker
+
 if st.button("Options Data") or 'options_data_shown' in st.session_state:
     st.subheader("Options Data")
     display_options_data(ticker, VOLUME_THRESHOLD, OI_THRESHOLD)
