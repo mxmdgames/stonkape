@@ -459,5 +459,54 @@ if st.button("Options Data") or 'options_data_shown' in st.session_state:
 
 else:
     st.error("No data found for the given ticker and time frame.")
-st.title("Live Stock Price Tracker")
+def calculate_fear_greed_index(data):
+    # Normalize RSI to a 0-100 scale (0 = Fear, 100 = Greed)
+    rsi_normalized = (data['RSI'] - data['RSI'].min()) / (data['RSI'].max() - data['RSI'].min()) * 100
+    
+    # Calculate the distance of the current close price from the SMA as a greed factor
+    sma_distance = data['Close'] / data['SMA'] - 1
+    sma_normalized = (sma_distance - sma_distance.min()) / (sma_distance.max() - sma_distance.min()) * 100
+    
+    # Normalize volume (higher volume can indicate higher greed)
+    volume_normalized = (data['Volume'] - data['Volume'].min()) / (data['Volume'].max() - data['Volume'].min()) * 100
+    
+    # Combine the factors to create the index
+    fear_greed_index = (rsi_normalized + sma_normalized + volume_normalized) / 3
+    
+    return fear_greed_index
+
+# Assuming 'data' is your DataFrame containing 'RSI', 'Close', 'SMA', and 'Volume'
+data['FearGreedIndex'] = calculate_fear_greed_index(data)
+
+# Display Fear and Greed Index as a pressure gauge
+st.subheader("Fear and Greed Index")
+
+# Define ranges and colors for the gauge chart
+ranges = [0, 20, 40, 60, 80, 100]
+colors = ['#FF0000', '#FF4500', '#FFD700', '#32CD32', '#008000', '#006400']
+
+# Create gauge chart
+fig = go.Figure(go.Indicator(
+    mode = "gauge+number",
+    value = data['FearGreedIndex'].iloc[-1],  # Current Fear and Greed Index value
+    domain = {'x': [0, 1], 'y': [0, 1]},
+    title = {'text': "Fear and Greed Index"},
+    gauge = {
+        'axis': {'range': [None, 100], 'tickvals': ranges, 'ticktext': ['Extreme Fear', 'Fear', 'Neutral', 'Greed', 'Extreme Greed']},
+        'bar': {'color': "black"},
+        'steps' : [
+            {'range': [0, 20], 'color': '#FF0000'},
+            {'range': [20, 40], 'color': '#FF4500'},
+            {'range': [40, 60], 'color': '#FFD700'},
+            {'range': [60, 80], 'color': '#32CD32'},
+            {'range': [80, 100], 'color': '#008000'}],
+        'threshold' : {'line': {'color': "red", 'width': 4}, 'thickness': 0.75, 'value': data['FearGreedIndex'].iloc[-1]}
+    }
+))
+
+st.plotly_chart(fig)
+
+# Display Fear and Greed Index as a line chart
+st.subheader("Fear and Greed Index Over Time")
+st.line_chart(data['FearGreedIndex'])
 
