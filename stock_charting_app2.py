@@ -69,7 +69,7 @@ period = period_mapping[time_frame]
 
 #Function to aggregate data
 def aggregate_data(data, interval):
-if interval == "1h":
+    if interval == "1h":
 return data.resample('H').agg({
 'Open': 'first',
 'High': 'max',
