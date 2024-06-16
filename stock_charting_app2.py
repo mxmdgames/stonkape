@@ -320,7 +320,7 @@ if not data.empty:
 
 
 else:
-    st.error("Failed to load data. Please check the ticker symbol and date range.")"""
+    st.error("Failed to load data. Please check the ticker symbol and date range.")
 # Store the initial volume and OI thresholds in the session state
 
 if 'volume_threshold' not in st.session_state:
