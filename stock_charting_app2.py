@@ -420,75 +420,82 @@ st.plotly_chart(fig)
 # Display Fear and Greed Index as a line chart
 st.subheader("Fear and Greed Index Over Time")
 st.line_chart(data['FearGreedIndex'])
-# Define a threshold for high volume
-VOLUME_THRESHOLD = 1000
 
-# Function to decode contract symbol
-def decode_contract_symbol(contract_symbol):
-    from datetime import datetime
-    # Extract the ticker symbol, expiration date, option type, and strike price from the contract symbol
-    ticker_symbol = contract_symbol[:-15]
-    expiration_date = datetime.strptime(contract_symbol[-15:-9], '%y%m%d').date()
-    option_type = 'Call' if contract_symbol[-9] == 'C' else 'Put'
-    strike_price = int(contract_symbol[-8:]) / 1000
+# Function to fetch high volume options data
+def fetch_options_data(ticker, volume_threshold, oi_threshold):
+    stock = yf.Ticker(ticker)
+    options_expiration_dates = stock.options
 
-    return ticker_symbol, expiration_date, option_type, strike_price
+    if not options_expiration_dates:
+        st.error("No options data found for the given ticker.")
+        return None, None
 
-@st.cache_data
-def get_high_volume_options(ticker_symbol):
-    # Create a ticker object
-    ticker = yf.Ticker(ticker_symbol)
+    all_calls = []
+    all_puts = []
 
-    # Get all expiry dates
-    expiry_dates = ticker.options
+    for options_date in options_expiration_dates:
+        options_chain = stock.option_chain(options_date)
 
-    # Initialize an empty DataFrame to store all high volume options
-    high_volume_options = pd.DataFrame()
+        calls = options_chain.calls
+        puts = options_chain.puts
 
-    # Loop through all expiry dates
-    for expiry_date in expiry_dates:
-        # Get options data for this expiry date
-        options_data = ticker.option_chain(expiry_date)
+        # Calculate DTE
+        dte = (pd.to_datetime(options_date) - datetime.now()).days
 
-        # The returned data is a named tuple containing two dataframes: calls and puts
-        calls_data = options_data.calls
-        puts_data = options_data.puts
+        calls['DTE'] = f"{dte}DTE"
+        puts['DTE'] = f"{dte}DTE"
 
-        # Filter for high volume options
-        high_volume_calls = calls_data[calls_data['volume'] > VOLUME_THRESHOLD].copy()
-        high_volume_puts = puts_data[puts_data['volume'] > VOLUME_THRESHOLD].copy()
+        high_volume_calls = calls[(calls['volume'] >= volume_threshold) & (calls['openInterest'] >= oi_threshold)].copy()
+        high_volume_puts = puts[(puts['volume'] >= volume_threshold) & (puts['openInterest'] >= oi_threshold)].copy()
 
-        # Add option type column
+        all_calls.append(high_volume_calls)
+        all_puts.append(high_volume_puts)
+
+    all_calls_df = pd.concat(all_calls)
+    all_puts_df = pd.concat(all_puts)
+
+    return all_calls_df, all_puts_df
+
+# Function to display options data
+def display_options_data(ticker, volume_threshold, oi_threshold):
+    try:
+        high_volume_calls, high_volume_puts = fetch_options_data(ticker, volume_threshold, oi_threshold)
+
+        if high_volume_calls is None or high_volume_puts is None:
+            return
+
+        st.subheader("High Volume Call Options")
         if not high_volume_calls.empty:
-            high_volume_calls.loc[:, 'Option Type'] = 'Call'
+            st.write(high_volume_calls)
+        else:
+            st.write("No high volume call options found.")
+
+        st.subheader("High Volume Put Options")
         if not high_volume_puts.empty:
-            high_volume_puts.loc[:, 'Option Type'] = 'Put'
+            st.write(high_volume_puts)
+        else:
+            st.write("No high volume put options found.")
+    except Exception as e:
+        st.error(f"Error fetching options data: {e}")
 
-        # Concatenate calls and puts data
-        high_volume_options_date = pd.concat([high_volume_calls, high_volume_puts])
+# Store the initial volume and OI thresholds in the session state
+if 'volume_threshold' not in st.session_state:
+    st.session_state.volume_threshold = 5000
+if 'oi_threshold' not in st.session_state:
+    st.session_state.oi_threshold = 1000
 
-        # Append to the overall DataFrame
-        high_volume_options = pd.concat([high_volume_options, high_volume_options_date])
+# Slider for volume threshold
+VOLUME_THRESHOLD = st.slider("Volume Threshold", min_value=0, max_value=10000, value=st.session_state.volume_threshold, step=100)
 
-    # Decode contract symbols
-    high_volume_options[['Ticker Symbol', 'Expiration Date', 'Option Type', 'Strike Price']] = high_volume_options.apply(lambda row: decode_contract_symbol(row['contractSymbol']), axis=1, result_type='expand')
+# Slider for OI threshold
+OI_THRESHOLD = st.slider("OI Threshold", min_value=0, max_value=10000, value=st.session_state.oi_threshold, step=100)
 
-    # Reorder and rename columns to match the screenshot
-    high_volume_options = high_volume_options[['Ticker Symbol', 'contractSymbol', 'Expiration Date', 'lastTradeDate', 'Strike Price', 'lastPrice', 'bid', 'ask', 'change', 'percentChange', 'volume', 'openInterest', 'impliedVolatility', 'inTheMoney', 'Option Type']]
-    high_volume_options.columns = ['Ticker', 'Contract', 'DTE', 'Last Trade Date', 'Strike', 'Last', 'Bid', 'Ask', 'Change', 'Percent Change', 'Volume', 'Open Interest', 'IV', 'ITM', 'Type']
+# Update session state with the new volume and OI thresholds
+st.session_state.volume_threshold = VOLUME_THRESHOLD
+st.session_state.oi_threshold = OI_THRESHOLD
 
-    return high_volume_options
-
-# Fetch high volume options
-high_volume_options = get_high_volume_options(ticker)
-
-# Create tables for top calls and puts
-top_calls = high_volume_options[high_volume_options['Type'] == 'Call'].nlargest(10, 'Volume')
-top_puts = high_volume_options[high_volume_options['Type'] == 'Put'].nlargest(10, 'Volume')
-
-# Display the tables
-st.subheader("Top 10 Most Active Calls")
-st.write(top_calls)
-
-st.subheader("Top 10 Most Active Puts")
-st.write(top_puts)
+# Fetch high volume options if button is pressed or if options data was previously shown
+if st.button("Options Data") or 'options_data_shown' in st.session_state:
+    st.subheader("Options Data")
+    display_options_data(ticker, VOLUME_THRESHOLD, OI_THRESHOLD)
+    st.session_state.options_data_shown = True
