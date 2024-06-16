@@ -165,8 +165,6 @@ def calculate_options_flow(data):
     # Get options chain
     options_chain = yf.Ticker(ticker).option_chain(data['Date'].iloc[-1].date())
 
-    # Update the line to retrieve the correct date column
-    options_chain = yf.Ticker(ticker).option_chain(data['Date'].dt.date.iloc[-1])
 
 
 
