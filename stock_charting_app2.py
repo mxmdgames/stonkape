@@ -151,7 +151,7 @@ if not data.empty:
         return ichimoku.ichimoku_a(), ichimoku.ichimoku_b(), ichimoku.ichimoku_base_line(), ichimoku.ichimoku_conversion_line()
         
     def calculate_stochastic_oscillator(data, window, smooth_window=3):
-    stoch = ta.momentum.StochasticOscillator(
+        stoch = ta.momentum.StochasticOscillator(
         high=data['High'], 
         low=data['Low'], 
         close=data['Close'], 
