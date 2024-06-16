@@ -73,7 +73,7 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
                    align='left'))
     ])
     fig_puts.update_layout(title="High Volume Put Options")
-    st.plotly_chart(fig_puts)
+   
 
 # Streamlit UI components
 st.title("Options Data Display")
