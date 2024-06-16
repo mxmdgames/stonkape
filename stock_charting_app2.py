@@ -392,8 +392,23 @@ if st.button("Vol Sup/Res Pivot Points"):
     st.write("Min Levels:", min_list)
 else:
     st.error("Failed to load data. Please check the ticker symbol and date range.")
+import streamlit as st
+
+# User input for stock ticker
+ticker = st.text_input("Enter Stock Ticker", value="GME", max_chars=10)
+
 # Button to search for news related to the stock
 if st.button("Search News for Stock"):
-    search_url = f"https://www.google.com/search?q={ticker}+stock+news"
+    google_search_url = f"https://www.google.com/search?q={ticker}+stock+news"
+    bnn_bloomberg_search_url = f"https://www.bnnbloomberg.ca/search?q={ticker}"
+
+    js_code = f'''
+    <script>
+    window.open("{google_search_url}", "_blank").focus();
+    window.open("{bnn_bloomberg_search_url}", "_blank").focus();
+    </script>
+    '''
+    st.markdown(js_code, unsafe_allow_html=True)
+
     st.markdown(f"[Open News for {ticker}]({search_url})", unsafe_allow_html=True)
 
