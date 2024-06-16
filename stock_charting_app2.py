@@ -6,7 +6,7 @@ import ta
 from functools import lru_cache
 import options_data
 
-Set page config
+#Set page config
 st.set_page_config(page_title="Stock Charting and Technical Analysis App", layout="wide")
 
 Custom CSS for a professional look
