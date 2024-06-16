@@ -161,9 +161,6 @@ if not data.empty:
         return ta.trend.PSARIndicator(data['High'], data['Low'], data['Close']).psar()
     def calculate_obv(data):
         return ta.volume.OnBalanceVolumeIndicator(data['Close'], data['Volume']).on_balance_volume()
-def calculate_options_flow(data):
-    # Get options chain
-    options_chain = yf.Ticker(ticker).option_chain(data['Date'].iloc[-1].date())
 
 
 
@@ -372,30 +369,6 @@ if st.session_state.show_info:
     st.write("Pivots:", pivots)
     st.write("Max Levels:", max_list)
     st.write("Min Levels:", min_list)
-# Store the initial volume and OI thresholds in the session state
-if 'volume_threshold' not in st.session_state:
-    st.session_state.volume_threshold = 5000
-if 'oi_threshold' not in st.session_state:
-    st.session_state.oi_threshold = 1000
-
-# Slider for volume threshold
-VOLUME_THRESHOLD = st.slider("Volume Threshold", min_value=0, max_value=10000, value=st.session_state.volume_threshold, step=100)
-
-# Slider for OI threshold
-OI_THRESHOLD = st.slider("OI Threshold", min_value=0, max_value=10000, value=st.session_state.oi_threshold, step=100)
-
-# Update session state with the new volume and OI thresholds
-st.session_state.volume_threshold = VOLUME_THRESHOLD
-st.session_state.oi_threshold = OI_THRESHOLD
-
-# Fetch high volume options if button is pressed or if options data was previously shown
-if st.button("Options Data") or 'options_data_shown' in st.session_state:
-    st.subheader("Options Data")
-    options_data = calculate_options_flow(data)  # Call the function here
-    st.write(options_data)  # Display the options data
-    st.session_state.options_data_shown = True
-else:
-    st.error("No data found for the given ticker and time frame.")
 
 def calculate_fear_greed_index(data):
     # Normalize RSI to a 0-100 scale (0 = Fear, 100 = Greed)
