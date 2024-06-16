@@ -220,7 +220,7 @@ if not data.empty:
 
     # Add main plot
     fig.add_trace(go.Candlestick(
-        x=data[datetime_column],
+        x=data.index if datetime_column == 'Datetime' else data[datetime_column],
         open=data['Open'],
         high=data['High'],
         low=data['Low'],
@@ -230,35 +230,35 @@ if not data.empty:
 
     # Add volume bars
     if show_volume:
-        fig.add_trace(go.Bar(x=data[datetime_column], y=data['Volume'], name='Volume', yaxis='y2', marker=dict(color='lightgray', opacity=0.5)))
+        fig.add_trace(go.Bar(x=data.index if datetime_column == 'Datetime' else data[datetime_column], y=data['Volume'], name='Volume', yaxis='y2', marker=dict(color='lightgray', opacity=0.5)))
 
     # Add selected indicators to the plot
     if 'SMA' in selected_indicators:
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['SMA'], mode='lines', name='SMA'))
+        fig.add_trace(go.Scatter(x=data.index if datetime_column == 'Datetime' else data[datetime_column], y=data['SMA'], mode='lines', name='SMA'))
     if 'EMA' in selected_indicators:
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['EMA'], mode='lines', name='EMA'))
+        fig.add_trace(go.Scatter(x=data.index if datetime_column == 'Datetime' else data[datetime_column], y=data['EMA'], mode='lines', name='EMA'))
     if 'RSI' in selected_indicators:
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['RSI'], mode='lines', name='RSI', yaxis='y3'))
+        fig.add_trace(go.Scatter(x=data.index if datetime_column == 'Datetime' else data[datetime_column], y=data['RSI'], mode='lines', name='RSI', yaxis='y3'))
     if 'MACD' in selected_indicators:
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['MACD'], mode='lines', name='MACD'))
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['MACD_Signal'], mode='lines', name='MACD Signal'))
-        fig.add_trace(go.Bar(x=data[datetime_column], y=data['MACD_Hist'], name='MACD Hist', yaxis='y4'))
+        fig.add_trace(go.Scatter(x=data.index if datetime_column == 'Datetime' else data[datetime_column], y=data['MACD'], mode='lines', name='MACD'))
+        fig.add_trace(go.Scatter(x=data.index if datetime_column == 'Datetime' else data[datetime_column], y=data['MACD_Signal'], mode='lines', name='MACD Signal'))
+        fig.add_trace(go.Bar(x=data.index if datetime_column == 'Datetime' else data[datetime_column], y=data['MACD_Hist'], name='MACD Hist', yaxis='y4'))
     if 'BBands' in selected_indicators:
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['BB_High'], mode='lines', name='BB High'))
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['BB_Low'], mode='lines', name='BB Low'))
+        fig.add_trace(go.Scatter(x=data.index if datetime_column == 'Datetime' else data[datetime_column], y=data['BB_High'], mode='lines', name='BB High'))
+        fig.add_trace(go.Scatter(x=data.index if datetime_column == 'Datetime' else data[datetime_column], y=data['BB_Low'], mode='lines', name='BB Low'))
     if 'Ichimoku Cloud' in selected_indicators:
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['Ichimoku_A'], mode='lines', name='Ichimoku A'))
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['Ichimoku_B'], mode='lines', name='Ichimoku B'))
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['Ichimoku_Base'], mode='lines', name='Ichimoku Base'))
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['Ichimoku_Conv'], mode='lines', name='Ichimoku Conv'))
+        fig.add_trace(go.Scatter(x=data.index if datetime_column == 'Datetime' else data[datetime_column], y=data['Ichimoku_A'], mode='lines', name='Ichimoku A'))
+        fig.add_trace(go.Scatter(x=data.index if datetime_column == 'Datetime' else data[datetime_column], y=data['Ichimoku_B'], mode='lines', name='Ichimoku B'))
+        fig.add_trace(go.Scatter(x=data.index if datetime_column == 'Datetime' else data[datetime_column], y=data['Ichimoku_Base'], mode='lines', name='Ichimoku Base'))
+        fig.add_trace(go.Scatter(x=data.index if datetime_column == 'Datetime' else data[datetime_column], y=data['Ichimoku_Conv'], mode='lines', name='Ichimoku Conv'))
     if 'Parabolic SAR' in selected_indicators:
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['Parabolic_SAR'], mode='markers', name='Parabolic SAR', marker=dict(size=2)))
+        fig.add_trace(go.Scatter(x=data.index if datetime_column == 'Datetime' else data[datetime_column], y=data['Parabolic_SAR'], mode='markers', name='Parabolic SAR', marker=dict(size=2)))
     if 'OBV' in selected_indicators:
-        fig.add_trace(go.Scatter(x=data[datetime_column], y=data['OBV'], mode='lines', name='OBV', yaxis='y5'))
+        fig.add_trace(go.Scatter(x=data.index if datetime_column == 'Datetime' else data[datetime_column], y=data['OBV'], mode='lines', name='OBV', yaxis='y5'))
 
     # Add Fibonacci retracement levels
     for level in fibonacci_levels:
-        fig.add_trace(go.Scatter(x=[data[datetime_column].iloc[0], data[datetime_column].iloc[-1]], y=[level, level], mode='lines', line=dict(dash='dash', color='purple'), name=f'Fib Level {level:.2f}'))
+        fig.add_trace(go.Scatter(x=[data.index[0], data.index[-1]], y=[level, level], mode='lines', line=dict(dash='dash', color='purple'), name=f'Fib Level {level:.2f}'))
 
     # Trend line drawing
     if draw_trend_line:
