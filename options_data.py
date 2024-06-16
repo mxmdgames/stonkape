@@ -1,14 +1,14 @@
 import yfinance as yf
 import pandas as pd
-import streamlit as st
 from datetime import datetime
+from dash import dcc, html
+import plotly.graph_objects as go
 
 def fetch_options_data(ticker, volume_threshold, oi_threshold):
     stock = yf.Ticker(ticker)
     options_expiration_dates = stock.options
 
     if not options_expiration_dates:
-        st.error("No options data found for the given ticker.")
         return None, None
 
     all_calls = []
@@ -38,22 +38,38 @@ def fetch_options_data(ticker, volume_threshold, oi_threshold):
     return all_calls_df, all_puts_df
 
 def display_options_data(ticker, volume_threshold, oi_threshold):
-    try:
-        high_volume_calls, high_volume_puts = fetch_options_data(ticker, volume_threshold, oi_threshold)
+    high_volume_calls, high_volume_puts = fetch_options_data(ticker, volume_threshold, oi_threshold)
 
-        if high_volume_calls is None or high_volume_puts is None:
-            return
+    if high_volume_calls is None or high_volume_puts is None:
+        return html.Div("No options data found for the given ticker.")
 
-        st.subheader("High Volume Call Options")
-        if not high_volume_calls.empty:
-            st.write(high_volume_calls)
-        else:
-            st.write("No high volume call options found.")
+    calls_table = dcc.Graph(
+        figure={
+            'data': [go.Table(
+                header=dict(values=list(high_volume_calls.columns),
+                            fill_color='paleturquoise',
+                            align='left'),
+                cells=dict(values=[high_volume_calls[col] for col in high_volume_calls.columns],
+                           fill_color='lavender',
+                           align='left'))
+            ],
+            'layout': go.Layout(title="High Volume Call Options")
+        }
+    )
 
-        st.subheader("High Volume Put Options")
-        if not high_volume_puts.empty:
-            st.write(high_volume_puts)
-        else:
-            st.write("No high volume put options found.")
-    except Exception as e:
-        st.error(f"Error fetching options data: {e}")
+    puts_table = dcc.Graph(
+        figure={
+            'data': [go.Table(
+                header=dict(values=list(high_volume_puts.columns),
+                            fill_color='paleturquoise',
+                            align='left'),
+                cells=dict(values=[high_volume_puts[col] for col in high_volume_puts.columns],
+                           fill_color='lavender',
+                           align='left'))
+            ],
+            'layout': go.Layout(title="High Volume Put Options")
+        }
+    )
+
+    return html.Div([calls_table, puts_table])
+
