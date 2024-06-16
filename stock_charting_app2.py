@@ -6,11 +6,6 @@ import ta
 from functools import lru_cache
 import options_data
 
-
-
-
-
-
 # Set page config
 st.set_page_config(page_title="Stock Charting and Technical Analysis App", layout="wide")
 
@@ -159,15 +154,6 @@ if not data.empty:
             st.error("Insufficient data to calculate Parabolic SAR.")
             return pd.Series([None] * len(data))
         return ta.trend.PSARIndicator(data['High'], data['Low'], data['Close']).psar()
-    def calculate_obv(data):
-        return ta.volume.OnBalanceVolumeIndicator(data['Close'], data['Volume']).on_balance_volume()
-    def calculate_options_flow(data):
-        # Get options chain
-        options_chain = yf.Ticker(ticker).option_chain(data['Date'].iloc[-1].date())
-
-
-
-    
 
     data['SMA'] = calculate_sma(data, window=20)
     data['EMA'] = calculate_ema(data, window=20)
@@ -179,11 +165,9 @@ if not data.empty:
     data['Parabolic_SAR'] = calculate_parabolic_sar(data)
     data['OBV'] = calculate_obv(data)
 
-
-    
     # Add checkboxes for indicators
     st.sidebar.title("Technical Indicators")
-    selected_indicators = st.sidebar.multiselect("Select Indicators", ['SMA', 'EMA', 'RSI', 'MACD','Stochastic Oscillator', 'BBands', 'Ichimoku Cloud', 'Parabolic SAR', 'OBV'])
+    selected_indicators = st.sidebar.multiselect("Select Indicators", ['SMA', 'EMA', 'RSI', 'MACD', 'Stochastic Oscillator', 'BBands', 'Ichimoku Cloud', 'Parabolic SAR', 'OBV'])
 
     # Add volume checkbox
     show_volume = st.sidebar.checkbox("Show Volume")
@@ -225,7 +209,7 @@ if not data.empty:
         fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Ichimoku_Conv'], mode='lines', name='Ichimoku Conversion Line', line=dict(color='grey')))
     if 'Parabolic SAR' in selected_indicators:
         fig.add_trace(go.Scatter(x=data[datetime_col], y=data['Parabolic_SAR'], mode='markers', name='Parabolic SAR', marker=dict(color='green', symbol='circle', size=5)))
-    
+
     # Add Fibonacci retracement levels
     for level in fibonacci_levels:
         fig.add_trace(go.Scatter(x=[data[datetime_col].iloc[0], data[datetime_col].iloc[-1]], y=[level, level], mode='lines', name=f'Fibonacci Level {level:.2f}', line=dict(dash='dash')))
@@ -302,7 +286,6 @@ if not data.empty:
             xaxis_rangeslider_visible=False,
         )
 
-
     # Render additional subplots
     if 'RSI' in selected_indicators:
         st.plotly_chart(rsi_fig, use_container_width=True)
@@ -318,194 +301,71 @@ if not data.empty:
 
     st.plotly_chart(fig, use_container_width=True, config=config)
 
-    # Define a threshold for high volume
-   # VOLUME_THRESHOLD = 1000
+    # Store the initial volume and OI thresholds in the session state
+    if 'volume_threshold' not in st.session_state:
+        st.session_state.volume_threshold = 5000
+    if 'oi_threshold' not in st.session_state:
+        st.session_state.oi_threshold = 1000
 
-    # Function to decode contract symbol
-    #def decode_contract_symbol(contract_symbol):
-     #   from datetime import datetime
-        # Extract the ticker symbol, expiration date, option type, and strike price from the contract symbol
-      #  ticker_symbol = contract_symbol[:-15]
-       # expiration_date = datetime.strptime(contract_symbol[-15:-9], '%y%m%d').date()
-        #option_type = 'Call' if contract_symbol[-9] == 'C' else 'Put'
-        #strike_price = int(contract_symbol[-8:]) / 1000
+    # Slider for volume threshold
+    VOLUME_THRESHOLD = st.slider("Volume Threshold", min_value=0, max_value=10000, value=st.session_state.volume_threshold, step=100)
 
-        #return ticker_symbol, expiration_date, option_type, strike_price
+    # Slider for OI threshold
+    OI_THRESHOLD = st.slider("OI Threshold", min_value=0, max_value=10000, value=st.session_state.oi_threshold, step=100)
 
-    #@st.cache_data
-    #def get_high_volume_options(ticker_symbol):
-        # Create a ticker object
-    #    ticker = yf.Ticker(ticker_symbol)
+    # Update session state with the new volume and OI thresholds
+    st.session_state.volume_threshold = VOLUME_THRESHOLD
+    st.session_state.oi_threshold = OI_THRESHOLD
 
-        # Get all expiry dates
-     #   expiry_dates = ticker.options
+    # Fetch high volume options if button is pressed or if options data was previously shown
+    if st.button("Options Data") or 'options_data_shown' in st.session_state:
+        st.subheader("Options Data")
+        options_data.display_options_data(ticker, VOLUME_THRESHOLD, OI_THRESHOLD)
+        st.session_state.options_data_shown = True
 
-        # Initialize an empty DataFrame to store all high volume options
-      #  high_volume_options = pd.DataFrame()
+    # Calculate Fear and Greed Index
+    def calculate_fear_greed_index(data):
+        rsi_normalized = (data['RSI'] - data['RSI'].min()) / (data['RSI'].max() - data['RSI'].min()) * 100
+        sma_distance = data['Close'] / data['SMA'] - 1
+        sma_normalized = (sma_distance - sma_distance.min()) / (sma_distance.max() - sma_distance.min()) * 100
+        volume_normalized = (data['Volume'] - data['Volume'].min()) / (data['Volume'].max() - data['Volume'].min()) * 100
+        fear_greed_index = (rsi_normalized + sma_normalized + volume_normalized) / 3
+        return fear_greed_index
 
-        # Loop through all expiry dates
-       # for expiry_date in expiry_dates:
-            # Get options data for this expiry date
-        #    options_data = ticker.option_chain(expiry_date)
+    data['FearGreedIndex'] = calculate_fear_greed_index(data)
 
-            # The returned data is a named tuple containing two dataframes: calls and puts
-         #   calls_data = options_data.calls
-          #  puts_data = options_data.puts
+    # Display Fear and Greed Index as a pressure gauge
+    st.subheader("Fear and Greed Index")
 
-            # Filter for high volume options
-           # high_volume_calls = calls_data[calls_data['volume'] > VOLUME_THRESHOLD].copy()
-            #high_volume_puts = puts_data[puts_data['volume'] > VOLUME_THRESHOLD].copy()
+    # Define ranges and colors for the gauge chart
+    ranges = [0, 20, 40, 60, 80, 100]
+    colors = ['#FF0000', '#FF4500', '#FFD700', '#32CD32', '#008000', '#006400']
 
-            # Add option type column
-            #if not high_volume_calls.empty:
-             #   high_volume_calls.loc[:, 'Option Type'] = 'Call'
-            #if not high_volume_puts.empty:
-             #   high_volume_puts.loc[:, 'Option Type'] = 'Put'
+    # Create gauge chart
+    fig = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=data['FearGreedIndex'].iloc[-1],
+        domain={'x': [0, 1], 'y': [0, 1]},
+        title={'text': "Fear and Greed Index"},
+        gauge={
+            'axis': {'range': [None, 100], 'tickvals': ranges, 'ticktext': ['Extreme Fear', 'Fear', 'Neutral', 'Greed', 'Extreme Greed']},
+            'bar': {'color': "black"},
+            'steps': [
+                {'range': [0, 20], 'color': '#FF0000'},
+                {'range': [20, 40], 'color': '#FF4500'},
+                {'range': [40, 60], 'color': '#FFD700'},
+                {'range': [60, 80], 'color': '#32CD32'},
+                {'range': [80, 100], 'color': '#008000'}
+            ],
+            'threshold': {'line': {'color': "red", 'width': 4}, 'thickness': 0.75, 'value': data['FearGreedIndex'].iloc[-1]}
+        }
+    ))
 
-            # Concatenate calls and puts data
-           # high_volume_options_date = pd.concat([high_volume_calls, high_volume_puts])
+    st.plotly_chart(fig)
 
-            # Append to the overall DataFrame
-            #high_volume_options = pd.concat([high_volume_options, high_volume_options_date])
-
-        # Decode contract symbols
-        #high_volume_options[['Ticker Symbol', 'Expiration Date', 'Option Type', 'Strike Price']] = high_volume_options.apply(lambda row: decode_contract_symbol(row['contractSymbol']), axis=1, result_type='expand')
-
-       # Reorder and rename columns to match the screenshot
-        #high_volume_options = high_volume_options[['Ticker Symbol', 'contractSymbol', 'Expiration Date', 'lastTradeDate', 'Strike Price', 'lastPrice', 'bid', 'ask', 'change', 'percentChange', 'volume', 'openInterest', 'impliedVolatility', 'inTheMoney', 'Option Type']]
-        #high_volume_options.columns = ['Ticker', 'Contract', 'DTE', 'Last Trade Date', 'Strike', 'Last', 'Bid', 'Ask', 'Change', 'Percent Change', 'Volume', 'Open Interest', 'IV', 'ITM', 'Type']
-
-        #return high_volume_options
-
-    # Fetch high volume options
-    #high_volume_options = get_high_volume_options(ticker)
-
-    # Create tables for top calls and puts
-    #top_calls = high_volume_options[high_volume_options['Type'] == 'Call'].nlargest(10, 'Volume')
-    #top_puts = high_volume_options[high_volume_options['Type'] == 'Put'].nlargest(10, 'Volume')
-
-    # Display the tables
-    #st.subheader("Top 10 Most Active Calls")
-    #st.write(top_calls)
-
-    #st.subheader("Top 10 Most Active Puts")
-    #st.write(top_puts)
-
-    # Calculate key volume support
-    #def calculate_key_volume_support(data):
-    #    volume_price = data[['Close', 'Volume']].copy()
-     #   volume_price['Volume x Close'] = volume_price['Close'] * volume_price['Volume']
-
-        # Group by price levels and calculate the volume x close
-      #  volume_support_levels = volume_price.groupby('Close')['Volume x Close'].sum()
-
-        # Find the price level with the highest volume x close (strongest support)
-       # highest_volume_support_level = volume_support_levels.idxmax()
-
-        # Find the price level with the lowest volume x close (weakest support)
-        #lowest_volume_support_level = volume_support_levels.idxmin()
-
-        #return highest_volume_support_level, lowest_volume_support_level
-
-    ## Identify support and resistance levels
-    #def identify_support_resistance(data):
-     #   pivots = []
-      #  max_list = []
-       # min_list = []
-        #for i in range(1, len(data)-1):
-         #   if data['Low'][i] < data['Low'][i-1] and data['Low'][i] < data['Low'][i+1]:
-          #      pivots.append((data[datetime_col][i], data['Low'][i]))
-           #     min_list.append((data[datetime_col][i], data['Low'][i]))
-           # if data['High'][i] > data['High'][i-1] and data['High'][i] > data['High'][i+1]:
-            #    pivots.append((data[datetime_col][i], data['High'][i]))
-             #   max_list.append((data[datetime_col][i], data['High'][i]))
-
-#        return pivots, max_list, min_list
-
-    # Calculate and display key volume support
- #   highest_volume_support, lowest_volume_support = calculate_key_volume_support(data)
-  #  st.write(f"Key Volume Support Level: Highest - {highest_volume_support}, Lowest - {lowest_volume_support}")
-
-    # Calculate and display support and resistance levels
-   # pivots, max_list, min_list = identify_support_resistance(data)
-    #st.write("Support and Resistance Levels:")
-    #st.write("Pivots:", pivots)
-    #st.write("Max Levels:", max_list)
-   # st.write("Min Levels:", min_list)
-
-#else:
- #   st.error("Failed to load data. Please check the ticker symbol and date range.")"""
-# Store the initial volume and OI thresholds in the session state
-if 'volume_threshold' not in st.session_state:
-    st.session_state.volume_threshold = 5000
-if 'oi_threshold' not in st.session_state:
-    st.session_state.oi_threshold = 1000
-
-# Slider for volume threshold
-VOLUME_THRESHOLD = st.slider("Volume Threshold", min_value=0, max_value=10000, value=st.session_state.volume_threshold, step=100)
-
-# Slider for OI threshold
-OI_THRESHOLD = st.slider("OI Threshold", min_value=0, max_value=10000, value=st.session_state.oi_threshold, step=100)
-
-# Update session state with the new volume and OI thresholds
-st.session_state.volume_threshold = VOLUME_THRESHOLD
-st.session_state.oi_threshold = OI_THRESHOLD
-
-# Fetch high volume options if button is pressed or if options data was previously shown
-if st.button("Options Data") or 'options_data_shown' in st.session_state:
-    st.subheader("Options Data")
-    options_data.display_options_data(ticker, VOLUME_THRESHOLD, OI_THRESHOLD)
-    st.session_state.options_data_shown = True
+    # Display Fear and Greed Index as a line chart
+    st.subheader("Fear and Greed Index Over Time")
+    st.line_chart(data['FearGreedIndex'])
 
 else:
-    st.error("No data found for the given ticker and time frame.")
-def calculate_fear_greed_index(data):
-    # Normalize RSI to a 0-100 scale (0 = Fear, 100 = Greed)
-    rsi_normalized = (data['RSI'] - data['RSI'].min()) / (data['RSI'].max() - data['RSI'].min()) * 100
-    
-    # Calculate the distance of the current close price from the SMA as a greed factor
-    sma_distance = data['Close'] / data['SMA'] - 1
-    sma_normalized = (sma_distance - sma_distance.min()) / (sma_distance.max() - sma_distance.min()) * 100
-    
-    # Normalize volume (higher volume can indicate higher greed)
-    volume_normalized = (data['Volume'] - data['Volume'].min()) / (data['Volume'].max() - data['Volume'].min()) * 100
-    
-    # Combine the factors to create the index
-    fear_greed_index = (rsi_normalized + sma_normalized + volume_normalized) / 3
-    
-    return fear_greed_index
-
-# Assuming 'data' is your DataFrame containing 'RSI', 'Close', 'SMA', and 'Volume'
-data['FearGreedIndex'] = calculate_fear_greed_index(data)
-
-# Display Fear and Greed Index as a pressure gauge
-st.subheader("Fear and Greed Index")
-
-# Define ranges and colors for the gauge chart
-ranges = [0, 20, 40, 60, 80, 100]
-colors = ['#FF0000', '#FF4500', '#FFD700', '#32CD32', '#008000', '#006400']
-
-# Create gauge chart
-fig = go.Figure(go.Indicator(
-    mode = "gauge+number",
-    value = data['FearGreedIndex'].iloc[-1],  # Current Fear and Greed Index value
-    domain = {'x': [0, 1], 'y': [0, 1]},
-    title = {'text': "Fear and Greed Index"},
-    gauge = {
-        'axis': {'range': [None, 100], 'tickvals': ranges, 'ticktext': ['Extreme Fear', 'Fear', 'Neutral', 'Greed', 'Extreme Greed']},
-        'bar': {'color': "black"},
-        'steps' : [
-            {'range': [0, 20], 'color': '#FF0000'},
-            {'range': [20, 40], 'color': '#FF4500'},
-            {'range': [40, 60], 'color': '#FFD700'},
-            {'range': [60, 80], 'color': '#32CD32'},
-            {'range': [80, 100], 'color': '#008000'}],
-        'threshold' : {'line': {'color': "red", 'width': 4}, 'thickness': 0.75, 'value': data['FearGreedIndex'].iloc[-1]}
-    }
-))
-
-st.plotly_chart(fig)
-
-# Display Fear and Greed Index as a line chart
-st.subheader("Fear and Greed Index Over Time")
-st.line_chart(data['FearGreedIndex'])
+    st.error("Failed to load data. Please check the ticker symbol and date range.")
