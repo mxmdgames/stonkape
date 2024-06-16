@@ -397,8 +397,7 @@ if st.button("Vol Sup/Res Pivot Points"):
     st.write("Pivots:", pivots)
     st.write("Max Levels:", max_list)
     st.write("Min Levels:", min_list)
-else:
-    st.error("Failed to load data. Please check the ticker symbol and date range.")
+
 
 # Get company name
 company_name = get_company_name(ticker)
