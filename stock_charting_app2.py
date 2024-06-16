@@ -91,16 +91,16 @@ def aggregate_data(data, interval):
 #Function to load data without caching
 @lru_cache(maxsize=None)
 def load_data_uncached(ticker, period, interval):
-data = yf.download(ticker, period=period, interval=interval, progress=False) # Disable progress bar
-if data.empty:
+    data = yf.download(ticker, period=period, interval=interval, progress=False) # Disable progress bar
+    if data.empty:
 st.error("No data found for the given ticker and time frame.")
-return data
-if data.index.tzinfo is not None:
+        return data
+    if data.index.tzinfo is not None:
 data.index = data.index.tz_localize(None)
-if interval in ["1h", "4h"]:
+    if interval in ["1h", "4h"]:
 data = aggregate_data(data, interval)
 data.reset_index(inplace=True)
-return data
+        return data
 
 #Fetching stock data
 def load_data(ticker, period, interval):
@@ -111,13 +111,13 @@ data = load_data_uncached(ticker, period, interval)
 return data
 
 #Refresh button
-if st.button("Refresh Data"):
+    if st.button("Refresh Data"):
 data = refresh_data(ticker, period, interval)
-else:
+    else:
 data = load_data(ticker, period, interval)
 
 #Check if data is loaded before proceeding
-if not data.empty:
+    if not data.empty:
 # Display raw data
 st.subheader("Raw Data")
 st.write(data.tail())
