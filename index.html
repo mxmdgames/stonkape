@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Charting and Technical Analysis Application</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+            font-size: 2em;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 20px;
+            justify-content: space-between;
+        }
+
+        .sidebar, .main-panel {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin: 10px;
+            padding: 20px;
+            flex: 1;
+            min-width: 280px;
+        }
+
+        .main-panel {
+            flex: 3;
+        }
+
+        h1, h2, h3, h4 {
+            color: #333;
+        }
+
+        h1 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            font-size: 1.3em;
+            margin-top: 30px;
+        }
+
+        p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        ul {
+            padding-left: 20px;
+        }
+
+        ul li {
+            margin-bottom: 10px;
+        }
+
+        code {
+            background-color: #f4f4f4;
+            border-radius: 3px;
+            padding: 2px 4px;
+            font-size: 90%;
+        }
+
+        .features, .how-to-use, .indicators {
+            margin-top: 30px;
+        }
+
+        .highlight {
+            background-color: #e7f9e9;
+            border-left: 4px solid #4CAF50;
+            padding: 10px;
+            margin: 20px 0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>Stock Charting and Technical Analysis Application</header>
+
+    <div class="container">
+        <div class="sidebar">
+            <h2>Sidebar</h2>
+            <ul>
+                <li><b>Stock Ticker Input:</b> Enter the stock ticker symbol (e.g., AAPL, GOOGL) to fetch and analyze the stock data.</li>
+                <li><b>Time Frame Selection:</b> Choose the desired time frame to match your trading strategy (e.g., short-term intraday trades or long-term investments).</li>
+                <li><b>Technical Indicators Selection:</b> Select the technical indicators you want to visualize based on your analysis needs.</li>
+                <li><b>Volume Toggle:</b> Enable or disable the display of stock trading volume to understand market activity.</li>
+                <li><b>Trend Line Drawing Toggle:</b> Enable or disable trend line drawing mode for manual analysis.</li>
+            </ul>
+        </div>
+
+        <div class="main-panel">
+            <h1>Welcome to the Stock Charting and Technical Analysis Application!</h1>
+            <p>This application offers a suite of tools for analyzing stock market data using various technical indicators, helping traders make more informed decisions.</p>
+
+            <div class="features">
+                <h2>Features</h2>
+                <ul>
+                    <li><b>Stock Data Fetching:</b> Fetch historical stock data using yFinance.</li>
+                    <li><b>Customizable Time Frames:</b> Select from various time frames including Intraday, 1 Day, 5 Day, 1 Month, 6 Months, 1 Year, Year-To-Date (YTD), and 5 Years.</li>
+                    <li><b>Technical Indicators:</b> Calculate and visualize a wide range of technical indicators including:
+                        <ul>
+                            <li>Simple Moving Average (SMA)</li>
+                            <li>Exponential Moving Average (EMA)</li>
+                            <li>Relative Strength Index (RSI)</li>
+                            <li>Moving Average Convergence Divergence (MACD)</li>
+                            <li>Bollinger Bands (BBands)</li>
+                            <li>Ichimoku Cloud</li>
+                            <li>Stochastic Oscillator</li>
+                            <li>On-Balance Volume (OBV)</li>
+                            <li>Parabolic SAR</li>
+                        </ul>
+                    </li>
+                    <li><b>Volume Analysis:</b> Display stock trading volume alongside price data.</li>
+                    <li><b>Trend Line Drawing:</b> Enable trend line drawing mode for interactive analysis.</li>
+                    <li><b>Fibonacci Retracement Levels:</b> Automatically calculate and display Fibonacci retracement levels.</li>
+                    <li><b>Options Analysis:</b> Identify and display the top 10 most active calls and puts based on volume.</li>
+                    <li><b>Support and Resistance Levels:</b> Identify key support and resistance levels based on historical price data.</li>
+                </ul>
+            </div>
+
+            <div class="how-to-use">
+                <h2>How to Use the Application for Better Trades</h2>
+                <h3>Sidebar</h3>
+                <ul>
+                    <li><b>Stock Ticker Input:</b> Enter the stock ticker symbol (e.g., AAPL, GOOGL) to fetch and analyze the stock data.</li>
+                    <li><b>Time Frame Selection:</b> Choose the desired time frame to match your trading strategy (e.g., short-term intraday trades or long-term investments).</li>
+                    <li><b>Technical Indicators Selection:</b> Select the technical indicators you want to visualize based on your analysis needs.</li>
+                    <li><b>Volume Toggle:</b> Enable or disable the display of stock trading volume to understand market activity.</li>
+                    <li><b>Trend Line Drawing Toggle:</b> Enable or disable trend line drawing mode for manual analysis.</li>
+                </ul>
+                <h3>Main Panel</h3>
+                <ul>
+                    <li><b>Raw Data Display:</b> View the raw historical stock data to understand past price movements.</li>
+                    <li><b>Technical Indicators Visualization:</b> Analyze selected technical indicators overlaid on the stock price chart to identify trends and potential trade signals.</li>
+                    <li><b>Additional Subplots:</b> Use separate subplots for indicators like RSI, MACD, Stochastic Oscillator, and OBV to get a clearer picture of market conditions.</li>
+                    <li><b>Top Active Options:</b> Analyze the tables of the top 10 most active call and put options to gauge market sentiment and potential price movements.</li>
+                    <li><b>Support and Resistance Levels:</b> Use identified key support and resistance levels to make decisions on entry and exit points.</li>
+                    <li><b>Key Volume Support:</b> Assess levels with the highest and lowest volume support to understand significant price zones.</li>
+                </ul>
+            </div>
+
+            <div class="indicators">
+                <h2>Understanding and Using Technical Indicators</h2>
+                <div class="highlight">
+                    <h3>Simple Moving Average (SMA)</h3>
+                    <p><b>SMA</b> smooths out price data to identify trends.</p>
+                    <p><b>Usage:</b> Crosses above the SMA indicate potential buy signals; crosses below indicate potential sell signals.</p>
+                </div>
+
+                <div class="highlight">
+                    <h3>Exponential Moving Average (EMA)</h3>
+                    <p><b>EMA</b> reacts more quickly to price changes compared to SMA.</p>
+                    <p><b>Usage:</b> Similar to SMA but offers more timely signals.</p>
+                </div>
+
+                <div class="highlight">
+                    <h3>Relative Strength Index (RSI)</h3>
+                    <p><b>RSI</b> measures the speed and change of price movements.</p>
+                    <p><b>Usage:</b> Values above 70 suggest overbought conditions (potential sell), and values below 30 suggest oversold conditions (potential buy).</p>
+                </div>
+
+                <div class="highlight">
+                    <h3>Moving Average Convergence Divergence (MACD)</h3>
+                    <p><b>MACD</b> shows the relationship between two EMAs.</p>
+                    <p><b>Usage:</b> MACD crossing above the signal line can indicate a buy signal, while crossing below can indicate a sell signal.</p>
+                </div>
+
+                <div class="highlight">
+                    <h3>Bollinger Bands (BBands)</h3>
+                    <p><b>BBands</b> consist of a middle band (SMA) and two outer bands (standard deviations from the SMA).</p>
+                    <p><b>Usage:</b> Price touching the upper band suggests overbought conditions, and touching the lower band suggests oversold conditions.</p>
+                </div>
+
+                <div class="highlight">
+                    <h3>Ichimoku Cloud</h3>
+                    <p><b>Ichimoku Cloud</b> provides support and resistance levels and trend direction.</p>
+                    <p><b>Usage:</b> Price above the cloud suggests an uptrend, below suggests a downtrend. The cloud itself indicates support and resistance levels.</p>
+                </div>
+
+                <div class="highlight">
+                    <h3>Stochastic Oscillator</h3>
+                    <p><b>Stochastic Oscillator</b> compares a specific closing price to a range of prices over time.</p>
+                    <p><b>Usage:</b> Values above 80 are overbought (potential sell), and values below 20 are oversold (potential buy). Crossovers signal buy/sell opportunities.</p>
+                </div>
+
+                <div class="highlight">
+                    <h3>On-Balance Volume (OBV)</h3>
+                    <p><b>OBV</b> measures cumulative buying and selling pressure.</p>
+                    <p><b>Usage:</b> Rising OBV suggests buying pressure (potential buy), falling OBV suggests selling pressure (potential sell).</p>
+                </div>
+
+                <div class="highlight">
+                    <h3>Parabolic SAR</h3>
+                    <p><b>Parabolic SAR</b> provides potential entry and exit points.</p>
+                    <p><b>Usage:</b> When the price is below the SAR, it suggests a sell signal; when above, it suggests a buy signal.</p>
+                </div>
+            </div>
+
+            <div class="summary">
+                <h2>Making Better Trades with the Application</h2>
+                <ul>
+                    <li><b>Identify Trends:</b> Use SMA, EMA, and Ichimoku Cloud to determine the overall market trend.</li>
+                    <li><b>Spot Entry and Exit Points:</b> Use indicators like RSI, Stochastic Oscillator, and Parabolic SAR to find optimal entry and exit points.</li>
+                    <li><b>Validate with Volume:</b> Confirm signals using volume analysis and OBV.</li>
+                    <li><b>Set Targets and Stops:</b> Use Fibonacci retracement levels and Bollinger Bands to set price targets and stop-loss levels.</li>
+                    <li><b>Monitor Options Activity:</b> Gauge market sentiment by analyzing the most active calls and puts.</li>
+                    <li><b>Use Support and Resistance Levels:</b> Identify key levels for making strategic trading decisions.</li>
+                </ul>
+                <p>By leveraging these features and indicators, traders can gain a comprehensive understanding of market conditions, enhance their trading strategies, and improve their chances of making successful trades.</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
