@@ -455,7 +455,7 @@ st.session_state.oi_threshold = OI_THRESHOLD
 if st.button("Options Data") or 'options_data_shown' in st.session_state:
     st.subheader("Options Data")
     options_data.display_options_data(ticker, VOLUME_THRESHOLD, OI_THRESHOLD)
-    st.session_state.options_data_shown = True
+    st.session_state.options_data_shown = False
 
 else:
     st.error("No data found for the given ticker and time frame.")
