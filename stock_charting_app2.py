@@ -6,7 +6,7 @@ import ta
 from functools import lru_cache
 import options_data
 from analysis import calculate_key_volume_support, identify_support_resistance
-
+import webbrowser
 # Set page config
 st.set_page_config(page_title="Stock Charting and Technical Analysis App", layout="wide")
 
@@ -392,3 +392,8 @@ if st.button("Vol Sup/Res Pivot Points"):
     st.write("Min Levels:", min_list)
 else:
     st.error("Failed to load data. Please check the ticker symbol and date range.")
+# Button to search for news related to the stock
+if st.button("Search News for Stock"):
+    search_url = f"https://www.google.com/search?q={ticker}+stock+news"
+    webbrowser.open_new_tab(search_url)
+
