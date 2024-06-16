@@ -17,7 +17,11 @@ def calculate_key_volume_support(data):
     return highest_volume_support_level, lowest_volume_support_level
 
 # Identify support and resistance levels
-def identify_support_resistance(data, datetime_col='Date'):
+def identify_support_resistance(data):
+    datetime_col = 'Datetime' if 'Datetime' in data.columns else 'Date'
+    if datetime_col not in data.columns:
+        raise KeyError(f"Datetime column '{datetime_col}' not found in data")
+
     pivots = []
     max_list = []
     min_list = []
