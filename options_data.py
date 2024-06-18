@@ -124,7 +124,8 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
         y=volume_data['call_buy_volume'],
         mode='lines+markers',
         name='Call Buy Volume',
-        line=dict(color='green')
+        line=dict(color='green'),
+        marker=dict(size=10)
     ))
 
     fig_line.add_trace(go.Scatter(
@@ -132,7 +133,8 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
         y=volume_data['call_sell_volume'],
         mode='lines+markers',
         name='Call Sell Volume',
-        line=dict(color='darkgreen')
+        line=dict(color='darkgreen'),
+        marker=dict(size=10)
     ))
 
     fig_line.add_trace(go.Scatter(
@@ -140,7 +142,8 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
         y=volume_data['put_buy_volume'],
         mode='lines+markers',
         name='Put Buy Volume',
-        line=dict(color='red')
+        line=dict(color='red'),
+        marker=dict(size=10)
     ))
 
     fig_line.add_trace(go.Scatter(
@@ -148,14 +151,21 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
         y=volume_data['put_sell_volume'],
         mode='lines+markers',
         name='Put Sell Volume',
-        line=dict(color='darkred')
+        line=dict(color='darkred'),
+        marker=dict(size=10)
     ))
 
     fig_line.update_layout(
         title="Buy vs Sell Volumes Over Time",
         xaxis_title="Days to Expiration (DTE)",
         yaxis_title="Volume",
-        legend_title="Volume Type"
+        legend_title="Volume Type",
+        template="plotly_dark",
+        margin=dict(l=0, r=0, t=50, b=0),
+        paper_bgcolor='rgba(0, 0, 0, 0)',
+        plot_bgcolor='rgba(0, 0, 0, 0)',
+        xaxis=dict(showgrid=False),
+        yaxis=dict(showgrid=False)
     )
 
     st.plotly_chart(fig_line)
