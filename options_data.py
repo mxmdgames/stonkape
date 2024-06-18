@@ -5,6 +5,7 @@ from datetime import datetime
 import plotly.graph_objects as go
 
 # Function to fetch options data
+@st.cache
 def fetch_options_data(ticker, volume_threshold, oi_threshold):
     stock = yf.Ticker(ticker)
     options_expiration_dates = stock.options
@@ -47,7 +48,7 @@ def classify_volume(options_df):
     return options_df
 
 # Function to fetch and store options data with timestamp
-@st.cache_data
+@st.cache
 def fetch_and_store_options_data(ticker, volume_threshold, oi_threshold):
     high_volume_calls, high_volume_puts = fetch_options_data(ticker, volume_threshold, oi_threshold)
     if high_volume_calls is None or high_volume_puts is None:
