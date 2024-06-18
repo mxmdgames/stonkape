@@ -66,29 +66,6 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
     st.write("High Volume Put Options")
     st.dataframe(high_volume_puts)
 
-    # Plotting the data in a table using Plotly for better visual representation
-    fig_calls = go.Figure(data=[go.Table(
-        header=dict(values=list(high_volume_calls.columns),
-                    fill_color='paleturquoise',
-                    align='left'),
-        cells=dict(values=[high_volume_calls[col] for col in high_volume_calls.columns],
-                   fill_color='lavender',
-                   align='left'))
-    ])
-    fig_calls.update_layout(title="High Volume Call Options")
-    st.plotly_chart(fig_calls)
-
-    fig_puts = go.Figure(data=[go.Table(
-        header=dict(values=list(high_volume_puts.columns),
-                    fill_color='paleturquoise',
-                    align='left'),
-        cells=dict(values=[high_volume_puts[col] for col in high_volume_puts.columns],
-                   fill_color='lavender',
-                   align='left'))
-    ])
-    fig_puts.update_layout(title="High Volume Put Options")
-    st.plotly_chart(fig_puts)
-
     # Aggregating volume data by expiration date
     call_volumes = high_volume_calls.groupby('DTE')[['buy_volume', 'sell_volume']].sum().reset_index()
     put_volumes = high_volume_puts.groupby('DTE')[['buy_volume', 'sell_volume']].sum().reset_index()
