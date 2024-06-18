@@ -142,56 +142,59 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
     # Plotting the volume data as line chart
     fig_line = go.Figure()
 
-    fig_line.add_trace(go.Scatter(
-        x=volume_data['timestamp'],
-        y=volume_data['call_buy_volume'],
-        mode='lines+markers',
-        name='Call Buy Volume',
-        line=dict(color='green'),
-        marker=dict(size=10)
-    ))
+    if not volume_data.empty:
+        fig_line.add_trace(go.Scatter(
+            x=volume_data['timestamp'],
+            y=volume_data['call_buy_volume'],
+            mode='lines+markers',
+            name='Call Buy Volume',
+            line=dict(color='green'),
+            marker=dict(size=10)
+        ))
 
-    fig_line.add_trace(go.Scatter(
-        x=volume_data['timestamp'],
-        y=volume_data['call_sell_volume'],
-        mode='lines+markers',
-        name='Call Sell Volume',
-        line=dict(color='darkgreen'),
-        marker=dict(size=10)
-    ))
+        fig_line.add_trace(go.Scatter(
+            x=volume_data['timestamp'],
+            y=volume_data['call_sell_volume'],
+            mode='lines+markers',
+            name='Call Sell Volume',
+            line=dict(color='darkgreen'),
+            marker=dict(size=10)
+        ))
 
-    fig_line.add_trace(go.Scatter(
-        x=volume_data['timestamp'],
-        y=volume_data['put_buy_volume'],
-        mode='lines+markers',
-        name='Put Buy Volume',
-        line=dict(color='red'),
-        marker=dict(size=10)
-    ))
+        fig_line.add_trace(go.Scatter(
+            x=volume_data['timestamp'],
+            y=volume_data['put_buy_volume'],
+            mode='lines+markers',
+            name='Put Buy Volume',
+            line=dict(color='red'),
+            marker=dict(size=10)
+        ))
 
-    fig_line.add_trace(go.Scatter(
-        x=volume_data['timestamp'],
-        y=volume_data['put_sell_volume'],
-        mode='lines+markers',
-        name='Put Sell Volume',
-        line=dict(color='darkred'),
-        marker=dict(size=10)
-    ))
+        fig_line.add_trace(go.Scatter(
+            x=volume_data['timestamp'],
+            y=volume_data['put_sell_volume'],
+            mode='lines+markers',
+            name='Put Sell Volume',
+            line=dict(color='darkred'),
+            marker=dict(size=10)
+        ))
 
-    fig_line.update_layout(
-        title="Buy vs Sell Volumes Over Time",
-        xaxis_title="Timestamp",
-        yaxis_title="Volume",
-        legend_title="Volume Type",
-        template="plotly_dark",
-        margin=dict(l=0, r=0, t=50, b=0),
-        paper_bgcolor='rgba(0, 0, 0, 0)',
-        plot_bgcolor='rgba(0, 0, 0, 0)',
-        xaxis=dict(showgrid=False),
-        yaxis=dict(showgrid=False)
-    )
+        fig_line.update_layout(
+            title="Buy vs Sell Volumes Over Time",
+            xaxis_title="Timestamp",
+            yaxis_title="Volume",
+            legend_title="Volume Type",
+            template="plotly_dark",
+            margin=dict(l=0, r=0, t=50, b=0),
+            paper_bgcolor='rgba(0, 0, 0, 0)',
+            plot_bgcolor='rgba(0, 0, 0, 0)',
+            xaxis=dict(showgrid=False),
+            yaxis=dict(showgrid=False)
+        )
 
-    st.plotly_chart(fig_line)
+        st.plotly_chart(fig_line)
+    else:
+        st.write("No data available for plotting. Try fetching options data.")
 
 # Streamlit UI components
 st.title("Options Data Display")
