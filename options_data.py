@@ -46,9 +46,11 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
         st.write("No options data found for the given ticker.")
         return
 
+    # Display high-volume call options in a table
     st.write("High Volume Call Options")
     st.dataframe(high_volume_calls)
 
+    # Display high-volume put options in a table
     st.write("High Volume Put Options")
     st.dataframe(high_volume_puts)
 
@@ -62,7 +64,7 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
                    align='left'))
     ])
     fig_calls.update_layout(title="High Volume Call Options")
-
+    st.plotly_chart(fig_calls)
 
     fig_puts = go.Figure(data=[go.Table(
         header=dict(values=list(high_volume_puts.columns),
@@ -73,7 +75,41 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
                    align='left'))
     ])
     fig_puts.update_layout(title="High Volume Put Options")
-   
+    st.plotly_chart(fig_puts)
+
+    # Aggregating volume data by expiration date
+    call_volumes = high_volume_calls.groupby('DTE')['volume'].sum().reset_index()
+    put_volumes = high_volume_puts.groupby('DTE')['volume'].sum().reset_index()
+
+    # Merging data to ensure both call and put volumes are present for each DTE
+    volume_data = pd.merge(call_volumes, put_volumes, on='DTE', how='outer', suffixes=('_call', '_put')).fillna(0)
+
+    # Plotting the volume data
+    fig_volumes = go.Figure()
+
+    fig_volumes.add_trace(go.Bar(
+        x=volume_data['DTE'],
+        y=volume_data['volume_call'],
+        name='Call Volume',
+        marker_color='green'
+    ))
+
+    fig_volumes.add_trace(go.Bar(
+        x=volume_data['DTE'],
+        y=volume_data['volume_put'],
+        name='Put Volume',
+        marker_color='red'
+    ))
+
+    fig_volumes.update_layout(
+        barmode='group',
+        title="Call vs Put Volumes by Expiration Date",
+        xaxis_title="Days to Expiration (DTE)",
+        yaxis_title="Volume",
+        legend_title="Option Type"
+    )
+
+    st.plotly_chart(fig_volumes)
 
 # Streamlit UI components
 st.title("Options Data Display")
