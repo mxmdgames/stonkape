@@ -46,17 +46,31 @@ def classify_volume(options_df):
         lambda row: row['volume'] if row['lastPrice'] <= (row['bid'] + row['ask']) / 2 else 0, axis=1)
     return options_df
 
-# Function to display options data
-def display_options_data(ticker, volume_threshold, oi_threshold):
+# Function to fetch and store options data with timestamp
+@st.cache_data
+def fetch_and_store_options_data(ticker, volume_threshold, oi_threshold):
     high_volume_calls, high_volume_puts = fetch_options_data(ticker, volume_threshold, oi_threshold)
-
     if high_volume_calls is None or high_volume_puts is None:
-        st.write("No options data found for the given ticker.")
-        return
+        return None, None
+
+    # Add timestamp
+    timestamp = datetime.now()
+    high_volume_calls['timestamp'] = timestamp
+    high_volume_puts['timestamp'] = timestamp
 
     # Classify volumes into buy and sell
     high_volume_calls = classify_volume(high_volume_calls)
     high_volume_puts = classify_volume(high_volume_puts)
+
+    return high_volume_calls, high_volume_puts
+
+# Function to display options data
+def display_options_data(ticker, volume_threshold, oi_threshold):
+    high_volume_calls, high_volume_puts = fetch_and_store_options_data(ticker, volume_threshold, oi_threshold)
+
+    if high_volume_calls is None or high_volume_puts is None:
+        st.write("No options data found for the given ticker.")
+        return
 
     # Display high-volume call options in a table
     st.write("High Volume Call Options")
@@ -66,41 +80,41 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
     st.write("High Volume Put Options")
     st.dataframe(high_volume_puts)
 
-    # Aggregating volume data by expiration date
-    call_volumes = high_volume_calls.groupby('DTE')[['buy_volume', 'sell_volume']].sum().reset_index()
-    put_volumes = high_volume_puts.groupby('DTE')[['buy_volume', 'sell_volume']].sum().reset_index()
+    # Aggregating volume data by timestamp
+    call_volumes = high_volume_calls.groupby('timestamp')[['buy_volume', 'sell_volume']].sum().reset_index()
+    put_volumes = high_volume_puts.groupby('timestamp')[['buy_volume', 'sell_volume']].sum().reset_index()
 
-    # Merging data to ensure both call and put volumes are present for each DTE
+    # Merging data to ensure both call and put volumes are present for each timestamp
     call_volumes = call_volumes.rename(columns={'buy_volume': 'call_buy_volume', 'sell_volume': 'call_sell_volume'})
     put_volumes = put_volumes.rename(columns={'buy_volume': 'put_buy_volume', 'sell_volume': 'put_sell_volume'})
-    volume_data = pd.merge(call_volumes, put_volumes, on='DTE', how='outer').fillna(0)
+    volume_data = pd.merge(call_volumes, put_volumes, on='timestamp', how='outer').fillna(0)
 
     # Plotting the volume data as bar chart
     fig_volumes = go.Figure()
 
     fig_volumes.add_trace(go.Bar(
-        x=volume_data['DTE'],
+        x=volume_data['timestamp'],
         y=volume_data['call_buy_volume'],
         name='Call Buy Volume',
         marker_color='green'
     ))
 
     fig_volumes.add_trace(go.Bar(
-        x=volume_data['DTE'],
+        x=volume_data['timestamp'],
         y=volume_data['call_sell_volume'],
         name='Call Sell Volume',
         marker_color='darkgreen'
     ))
 
     fig_volumes.add_trace(go.Bar(
-        x=volume_data['DTE'],
+        x=volume_data['timestamp'],
         y=volume_data['put_buy_volume'],
         name='Put Buy Volume',
         marker_color='red'
     ))
 
     fig_volumes.add_trace(go.Bar(
-        x=volume_data['DTE'],
+        x=volume_data['timestamp'],
         y=volume_data['put_sell_volume'],
         name='Put Sell Volume',
         marker_color='darkred'
@@ -108,8 +122,8 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
 
     fig_volumes.update_layout(
         barmode='group',
-        title="Buy vs Sell Volumes by Expiration Date",
-        xaxis_title="Days to Expiration (DTE)",
+        title="Buy vs Sell Volumes by Timestamp",
+        xaxis_title="Timestamp",
         yaxis_title="Volume",
         legend_title="Volume Type"
     )
@@ -120,7 +134,7 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
     fig_line = go.Figure()
 
     fig_line.add_trace(go.Scatter(
-        x=volume_data['DTE'],
+        x=volume_data['timestamp'],
         y=volume_data['call_buy_volume'],
         mode='lines+markers',
         name='Call Buy Volume',
@@ -129,7 +143,7 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
     ))
 
     fig_line.add_trace(go.Scatter(
-        x=volume_data['DTE'],
+        x=volume_data['timestamp'],
         y=volume_data['call_sell_volume'],
         mode='lines+markers',
         name='Call Sell Volume',
@@ -138,7 +152,7 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
     ))
 
     fig_line.add_trace(go.Scatter(
-        x=volume_data['DTE'],
+        x=volume_data['timestamp'],
         y=volume_data['put_buy_volume'],
         mode='lines+markers',
         name='Put Buy Volume',
@@ -147,7 +161,7 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
     ))
 
     fig_line.add_trace(go.Scatter(
-        x=volume_data['DTE'],
+        x=volume_data['timestamp'],
         y=volume_data['put_sell_volume'],
         mode='lines+markers',
         name='Put Sell Volume',
@@ -157,7 +171,7 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
 
     fig_line.update_layout(
         title="Buy vs Sell Volumes Over Time",
-        xaxis_title="Days to Expiration (DTE)",
+        xaxis_title="Timestamp",
         yaxis_title="Volume",
         legend_title="Volume Type",
         template="plotly_dark",
