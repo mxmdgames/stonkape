@@ -139,6 +139,36 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
 
     st.plotly_chart(fig_volumes)
 
+    # Plotting the open interest data as bar chart similar to the provided image
+    oi_calls = high_volume_calls.groupby('strike')['openInterest'].sum().reset_index()
+    oi_puts = high_volume_puts.groupby('strike')['openInterest'].sum().reset_index()
+
+    fig_oi = go.Figure()
+
+    fig_oi.add_trace(go.Bar(
+        x=oi_calls['strike'],
+        y=oi_calls['openInterest'],
+        name='Calls OI',
+        marker_color='blue'
+    ))
+
+    fig_oi.add_trace(go.Bar(
+        x=oi_puts['strike'],
+        y=oi_puts['openInterest'],
+        name='Puts OI',
+        marker_color='red'
+    ))
+
+    fig_oi.update_layout(
+        barmode='stack',
+        title=f"Open Interest by Strike for {ticker}",
+        xaxis_title="Strike Price",
+        yaxis_title="Open Interest",
+        legend_title="Option Type"
+    )
+
+    st.plotly_chart(fig_oi)
+
 # Streamlit UI components
 st.title("Options Data Display")
 
