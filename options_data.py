@@ -75,7 +75,7 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
     put_volumes = put_volumes.rename(columns={'buy_volume': 'put_buy_volume', 'sell_volume': 'put_sell_volume'})
     volume_data = pd.merge(call_volumes, put_volumes, on='DTE', how='outer').fillna(0)
 
-    # Plotting the volume data
+    # Plotting the volume data as bar chart
     fig_volumes = go.Figure()
 
     fig_volumes.add_trace(go.Bar(
@@ -115,6 +115,50 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
     )
 
     st.plotly_chart(fig_volumes)
+
+    # Plotting the volume data as line chart
+    fig_line = go.Figure()
+
+    fig_line.add_trace(go.Scatter(
+        x=volume_data['DTE'],
+        y=volume_data['call_buy_volume'],
+        mode='lines+markers',
+        name='Call Buy Volume',
+        line=dict(color='green')
+    ))
+
+    fig_line.add_trace(go.Scatter(
+        x=volume_data['DTE'],
+        y=volume_data['call_sell_volume'],
+        mode='lines+markers',
+        name='Call Sell Volume',
+        line=dict(color='darkgreen')
+    ))
+
+    fig_line.add_trace(go.Scatter(
+        x=volume_data['DTE'],
+        y=volume_data['put_buy_volume'],
+        mode='lines+markers',
+        name='Put Buy Volume',
+        line=dict(color='red')
+    ))
+
+    fig_line.add_trace(go.Scatter(
+        x=volume_data['DTE'],
+        y=volume_data['put_sell_volume'],
+        mode='lines+markers',
+        name='Put Sell Volume',
+        line=dict(color='darkred')
+    ))
+
+    fig_line.update_layout(
+        title="Buy vs Sell Volumes Over Time",
+        xaxis_title="Days to Expiration (DTE)",
+        yaxis_title="Volume",
+        legend_title="Volume Type"
+    )
+
+    st.plotly_chart(fig_line)
 
 # Streamlit UI components
 st.title("Options Data Display")
