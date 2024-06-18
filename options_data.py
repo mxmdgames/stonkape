@@ -66,6 +66,11 @@ def fetch_and_store_options_data(ticker, volume_threshold, oi_threshold):
     high_volume_calls = classify_volume(high_volume_calls)
     high_volume_puts = classify_volume(high_volume_puts)
 
+    # Append new data to volume_data
+    global volume_data
+    volume_data = pd.concat([volume_data, high_volume_calls[['timestamp', 'buy_volume', 'sell_volume']],
+                            high_volume_puts[['timestamp', 'buy_volume', 'sell_volume']]], ignore_index=True)
+
     return high_volume_calls, high_volume_puts
 
 # Function to display options data
@@ -93,66 +98,46 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
     put_volumes = put_volumes.rename(columns={'buy_volume': 'put_buy_volume', 'sell_volume': 'put_sell_volume'})
     volume_data_current = pd.merge(call_volumes, put_volumes, on='timestamp', how='outer').fillna(0)
 
-    # Append new data to volume_data
-    global volume_data
-    volume_data = pd.concat([volume_data, volume_data_current], ignore_index=True)
+    # Plotting the volume data as bar chart
+    fig_volumes = go.Figure()
 
-    # Plotting the volume data as line chart
-    fig_line = go.Figure()
+    fig_volumes.add_trace(go.Bar(
+        x=volume_data_current['timestamp'],
+        y=volume_data_current['call_buy_volume'],
+        name='Call Buy Volume',
+        marker_color='green'
+    ))
 
-    if not volume_data.empty:
-        fig_line.add_trace(go.Scatter(
-            x=volume_data['timestamp'],
-            y=volume_data['call_buy_volume'],
-            mode='lines+markers',
-            name='Call Buy Volume',
-            line=dict(color='green'),
-            marker=dict(size=10)
-        ))
+    fig_volumes.add_trace(go.Bar(
+        x=volume_data_current['timestamp'],
+        y=volume_data_current['call_sell_volume'],
+        name='Call Sell Volume',
+        marker_color='darkgreen'
+    ))
 
-        fig_line.add_trace(go.Scatter(
-            x=volume_data['timestamp'],
-            y=volume_data['call_sell_volume'],
-            mode='lines+markers',
-            name='Call Sell Volume',
-            line=dict(color='darkgreen'),
-            marker=dict(size=10)
-        ))
+    fig_volumes.add_trace(go.Bar(
+        x=volume_data_current['timestamp'],
+        y=volume_data_current['put_buy_volume'],
+        name='Put Buy Volume',
+        marker_color='red'
+    ))
 
-        fig_line.add_trace(go.Scatter(
-            x=volume_data['timestamp'],
-            y=volume_data['put_buy_volume'],
-            mode='lines+markers',
-            name='Put Buy Volume',
-            line=dict(color='red'),
-            marker=dict(size=10)
-        ))
+    fig_volumes.add_trace(go.Bar(
+        x=volume_data_current['timestamp'],
+        y=volume_data_current['put_sell_volume'],
+        name='Put Sell Volume',
+        marker_color='darkred'
+    ))
 
-        fig_line.add_trace(go.Scatter(
-            x=volume_data['timestamp'],
-            y=volume_data['put_sell_volume'],
-            mode='lines+markers',
-            name='Put Sell Volume',
-            line=dict(color='darkred'),
-            marker=dict(size=10)
-        ))
+    fig_volumes.update_layout(
+        barmode='group',
+        title="Buy vs Sell Volumes by Timestamp",
+        xaxis_title="Timestamp",
+        yaxis_title="Volume",
+        legend_title="Volume Type"
+    )
 
-        fig_line.update_layout(
-            title="Buy vs Sell Volumes Over Time",
-            xaxis_title="Timestamp",
-            yaxis_title="Volume",
-            legend_title="Volume Type",
-            template="plotly_dark",
-            margin=dict(l=0, r=0, t=50, b=0),
-            paper_bgcolor='rgba(0, 0, 0, 0)',
-            plot_bgcolor='rgba(0, 0, 0, 0)',
-            xaxis=dict(showgrid=False),
-            yaxis=dict(showgrid=False)
-        )
-
-        st.plotly_chart(fig_line)
-    else:
-        st.write("No data available for plotting. Try fetching options data.")
+    st.plotly_chart(fig_volumes)
 
 # Streamlit UI components
 st.title("Options Data Display")
