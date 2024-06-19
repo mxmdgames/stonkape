@@ -149,14 +149,16 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
         x=oi_calls['strike'],
         y=oi_calls['openInterest'],
         name='Calls OI',
-        marker_color='blue'
+        marker_color='blue',
+        width=2  # Adjust the width to make bars thicker
     ))
 
     fig_oi.add_trace(go.Bar(
         x=oi_puts['strike'],
         y=oi_puts['openInterest'],
         name='Puts OI',
-        marker_color='red'
+        marker_color='red',
+        width=2  # Adjust the width to make bars thicker
     ))
 
     fig_oi.update_layout(
