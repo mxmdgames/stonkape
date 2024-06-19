@@ -177,23 +177,23 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
     in_the_money_calls = high_volume_calls[high_volume_calls['strike'] < current_stock_price]
     in_the_money_puts = high_volume_puts[high_volume_puts['strike'] > current_stock_price]
 
-    # Plotting the "in the money" options
-    in_the_money_calls_count = in_the_money_calls.groupby('strike').size().reset_index(name='count')
-    in_the_money_puts_count = in_the_money_puts.groupby('strike').size().reset_index(name='count')
+    # Aggregate the volumes for in-the-money options
+    in_the_money_calls_aggregated = in_the_money_calls.groupby('strike')['volume'].sum().reset_index(name='volume')
+    in_the_money_puts_aggregated = in_the_money_puts.groupby('strike')['volume'].sum().reset_index(name='volume')
 
     fig_itm = go.Figure()
 
     fig_itm.add_trace(go.Bar(
-        x=in_the_money_calls_count['strike'],
-        y=in_the_money_calls_count['count'],
+        x=in_the_money_calls_aggregated['strike'],
+        y=in_the_money_calls_aggregated['volume'],
         name='Calls (In the Money)',
         marker_color='blue',
         width=1  # Adjust the width to make bars thicker
     ))
 
     fig_itm.add_trace(go.Bar(
-        x=in_the_money_puts_count['strike'],
-        y=in_the_money_puts_count['count'],
+        x=in_the_money_puts_aggregated['strike'],
+        y=in_the_money_puts_aggregated['volume'],
         name='Puts (In the Money)',
         marker_color='orange',
         width=1  # Adjust the width to make bars thicker
@@ -203,7 +203,7 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
         barmode='group',
         title=f"In the Money Options by Strike for {ticker}",
         xaxis_title="Strike Price",
-        yaxis_title="Count",
+        yaxis_title="Volume",
         legend_title="Option Type"
     )
 
