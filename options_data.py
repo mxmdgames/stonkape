@@ -149,8 +149,8 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
         x=oi_calls['strike'],
         y=oi_calls['openInterest'],
         name='Calls OI',
-        marker_color='blue',
-        width=2  # Adjust the width to make bars thicker
+        marker_color='green',
+        width=1  # Adjust the width to make bars thicker
     ))
 
     fig_oi.add_trace(go.Bar(
@@ -158,7 +158,7 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
         y=oi_puts['openInterest'],
         name='Puts OI',
         marker_color='red',
-        width=2  # Adjust the width to make bars thicker
+        width=1  # Adjust the width to make bars thicker
     ))
 
     fig_oi.update_layout(
@@ -170,6 +170,46 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
     )
 
     st.plotly_chart(fig_oi)
+
+    # Determine current stock price
+    stock = yf.Ticker(ticker)
+    current_stock_price = stock.history(period='1d')['Close'].iloc[-1]
+
+    # Determine "in the money" options
+    in_the_money_calls = high_volume_calls[high_volume_calls['strike'] < current_stock_price]
+    in_the_money_puts = high_volume_puts[high_volume_puts['strike'] > current_stock_price]
+
+    # Plotting the "in the money" options
+    in_the_money_calls_count = in_the_money_calls.groupby('strike').size().reset_index(name='count')
+    in_the_money_puts_count = in_the_money_puts.groupby('strike').size().reset_index(name='count')
+
+    fig_itm = go.Figure()
+
+    fig_itm.add_trace(go.Bar(
+        x=in_the_money_calls_count['strike'],
+        y=in_the_money_calls_count['count'],
+        name='Calls (In the Money)',
+        marker_color='blue',
+        width=1  # Adjust the width to make bars thicker
+    ))
+
+    fig_itm.add_trace(go.Bar(
+        x=in_the_money_puts_count['strike'],
+        y=in_the_money_puts_count['count'],
+        name='Puts (In the Money)',
+        marker_color='orange',
+        width=1  # Adjust the width to make bars thicker
+    ))
+
+    fig_itm.update_layout(
+        barmode='group',
+        title=f"In the Money Options by Strike for {ticker}",
+        xaxis_title="Strike Price",
+        yaxis_title="Count",
+        legend_title="Option Type"
+    )
+
+    st.plotly_chart(fig_itm)
 
 # Streamlit UI components
 st.title("Options Data Display")
