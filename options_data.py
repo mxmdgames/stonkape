@@ -134,7 +134,15 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
         title="Buy vs Sell Volumes by Timestamp",
         xaxis_title="Timestamp",
         yaxis_title="Volume",
-        legend_title="Volume Type"
+        legend_title="Volume Type",
+        annotations=[
+            go.layout.Annotation(
+                text="Each count represents the volume of options contracts traded at that timestamp.",
+                xref="paper", yref="paper",
+                x=0.5, y=-0.2,
+                showarrow=False
+            )
+        ]
     )
 
     st.plotly_chart(fig_volumes)
@@ -166,7 +174,15 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
         title=f"Open Interest by Strike for {ticker}",
         xaxis_title="Strike Price",
         yaxis_title="Open Interest",
-        legend_title="Option Type"
+        legend_title="Option Type",
+        annotations=[
+            go.layout.Annotation(
+                text="Open Interest represents the total number of outstanding options contracts for each strike price.",
+                xref="paper", yref="paper",
+                x=0.5, y=-0.2,
+                showarrow=False
+            )
+        ]
     )
 
     st.plotly_chart(fig_oi)
@@ -206,7 +222,15 @@ def display_options_data(ticker, volume_threshold, oi_threshold):
         title=f"In the Money Options by Strike for {ticker}",
         xaxis_title="Strike Price",
         yaxis_title="Count",
-        legend_title="Option Type"
+        legend_title="Option Type",
+        annotations=[
+            go.layout.Annotation(
+                text="Each count represents the number of 'in the money' options contracts at that strike price.",
+                xref="paper", yref="paper",
+                x=0.5, y=-0.2,
+                showarrow=False
+            )
+        ]
     )
 
     st.plotly_chart(fig_itm)
