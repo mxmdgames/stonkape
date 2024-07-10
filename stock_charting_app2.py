@@ -67,6 +67,7 @@ period_mapping = {
 # Initialize period and interval
 interval = time_frame_mapping.get(time_frame, "1d")
 period = period_mapping.get(time_frame, "1d")
+
 # Function to get company name from ticker
 def get_company_name(ticker):
     try:
@@ -75,6 +76,7 @@ def get_company_name(ticker):
     except KeyError:
         st.error("Invalid ticker or unable to fetch company name.")
         return ticker
+
 # Function to aggregate data
 def aggregate_data(data, interval):
     if interval == "1h":
@@ -163,6 +165,14 @@ if not data.empty:
             return pd.Series([None] * len(data))
         return ta.trend.PSARIndicator(data['High'], data['Low'], data['Close']).psar()
 
+    def calculate_volume_stack(data):
+        data['buy_volume'] = data['Volume'] * (data['Close'] - data['Low']) / (data['High'] - data['Low'])
+        data['sell_volume'] = data['Volume'] * (data['High'] - data['Close']) / (data['High'] - data['Low'])
+        data['buyers_winning'] = data['buy_volume'] > data['sell_volume']
+        data['buy_percent'] = (data['buy_volume'] / data['Volume']) * 100
+        data['sell_percent'] = (data['sell_volume'] / data['Volume']) * 100
+        return data
+
     data['SMA'] = calculate_sma(data, window=20)
     data['EMA'] = calculate_ema(data, window=20)
     data['RSI'] = calculate_rsi(data, window=14)
@@ -173,12 +183,17 @@ if not data.empty:
     data['Parabolic_SAR'] = calculate_parabolic_sar(data)
     data['OBV'] = calculate_obv(data)
 
+    data = calculate_volume_stack(data)
+
     # Add checkboxes for indicators
     st.sidebar.title("Technical Indicators")
     selected_indicators = st.sidebar.multiselect("Select Indicators", ['SMA', 'EMA', 'RSI', 'MACD', 'Stochastic Oscillator', 'BBands', 'Ichimoku Cloud', 'Parabolic SAR', 'OBV'])
 
     # Add volume checkbox
     show_volume = st.sidebar.checkbox("Show Volume")
+
+    # Add volume stack checkbox
+    show_volume_stack = st.sidebar.checkbox("Show Volume Stack")
 
     # Add trend line drawing toggle
     draw_trend_line = st.sidebar.checkbox("Enable Trend Line Drawing")
@@ -294,6 +309,42 @@ if not data.empty:
             xaxis_rangeslider_visible=False,
         )
 
+    # Volume Stack chart
+    volume_stack_fig = go.Figure()
+    volume_stack_fig.add_trace(go.Bar(
+        x=data[datetime_col],
+        y=data['Volume'],
+        name='Total Volume',
+        marker_color=data['buyers_winning'].map({True: 'green', False: 'red'})
+    ))
+    volume_stack_fig.add_trace(go.Bar(
+        x=data[datetime_col],
+        y=data.apply(lambda row: min(row['buy_volume'], row['sell_volume']), axis=1),
+        name='Smaller Volume',
+        marker_color=data['buyers_winning'].map({True: 'red', False: 'green'})
+    ))
+    volume_stack_fig.update_layout(
+        title="Volume Stack",
+        barmode='overlay',
+        yaxis_title='Volume',
+        xaxis_title='Date',
+        template='plotly_dark',
+        xaxis_rangeslider_visible=False,
+    )
+
+    # Add volume percentages as annotations
+    volume_stack_fig.add_annotation(
+        x=1, y=1, xref="paper", yref="paper",
+        text=f"Buy: {data['buy_percent'].iloc[-1]:.1f}% | Sell: {data['sell_percent'].iloc[-1]:.1f}%",
+        showarrow=False,
+        font=dict(size=14),
+        bgcolor="rgba(0,0,0,0.5)",
+        bordercolor="white",
+        borderwidth=2,
+        borderpad=4,
+        align="right",
+    )
+
     # Render additional subplots
     if 'RSI' in selected_indicators:
         st.plotly_chart(rsi_fig, use_container_width=True)
@@ -303,6 +354,9 @@ if not data.empty:
         st.plotly_chart(stoch_fig, use_container_width=True)
     if 'OBV' in selected_indicators:
         st.plotly_chart(obv_fig, use_container_width=True)
+
+    if show_volume_stack:
+        st.plotly_chart(volume_stack_fig, use_container_width=True)
 
     # Update Plotly chart config for scroll zoom behavior
     config = dict({'scrollZoom': not draw_trend_line})
@@ -360,6 +414,7 @@ if not data.empty:
     # Display Fear and Greed Index as a line chart
     st.subheader("Fear and Greed Index Over Time")
     st.line_chart(data['FearGreedIndex'])
+
 else:
     st.error("Failed to load data. Please check the ticker symbol and date range.")
 
